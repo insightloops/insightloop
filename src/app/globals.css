@@ -1,26 +1,311 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Enterprise AI Insights Light Theme */
+  --background: 240 8% 97%;
+  --foreground: 240 25% 8%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 25% 8%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 25% 8%;
+  --primary: 262 90% 58%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 5% 92%;
+  --secondary-foreground: 240 25% 8%;
+  --muted: 240 5% 94%;
+  --muted-foreground: 240 8% 48%;
+  --accent: 195 85% 92%;
+  --accent-foreground: 195 100% 28%;
+  --destructive: 0 84% 58%;
+  --destructive-foreground: 0 0% 98%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 98%;
+  --success: 142 71% 45%;
+  --success-foreground: 0 0% 98%;
+  --info: 210 100% 56%;
+  --info-foreground: 0 0% 98%;
+  --border: 240 8% 86%;
+  --input: 240 5% 92%;
+  --ring: 262 90% 58%;
+  --chart-1: 262 90% 58%;
+  --chart-2: 195 100% 45%;
+  --chart-3: 142 71% 45%;
+  --chart-4: 38 92% 50%;
+  --chart-5: 310 85% 60%;
+  --radius: 0.75rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  /* Enterprise AI Insights Dark Theme */
+  --background: 240 18% 4%;
+  --foreground: 240 8% 95%;
+  --card: 240 15% 7%;
+  --card-foreground: 240 8% 95%;
+  --popover: 240 15% 7%;
+  --popover-foreground: 240 8% 95%;
+  --primary: 262 95% 70%;
+  --primary-foreground: 240 18% 4%;
+  --secondary: 240 8% 12%;
+  --secondary-foreground: 240 8% 85%;
+  --muted: 240 8% 12%;
+  --muted-foreground: 240 5% 58%;
+  --accent: 195 80% 8%;
+  --accent-foreground: 195 100% 75%;
+  --destructive: 0 75% 55%;
+  --destructive-foreground: 0 0% 98%;
+  --warning: 38 95% 55%;
+  --warning-foreground: 38 10% 10%;
+  --success: 142 71% 50%;
+  --success-foreground: 142 10% 10%;
+  --info: 210 100% 60%;
+  --info-foreground: 210 10% 10%;
+  --border: 240 8% 16%;
+  --input: 240 8% 12%;
+  --ring: 262 95% 70%;
+  --chart-1: 262 95% 70%;
+  --chart-2: 195 100% 55%;
+  --chart-3: 142 71% 50%;
+  --chart-4: 38 95% 55%;
+  --chart-5: 310 90% 65%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: hsl(var(--border));
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-feature-settings: 'cv01', 'cv02', 'cv03', 'cv04';
+}
+
+/* Enhanced enterprise visual effects */
+.card {
+  backdrop-filter: blur(8px);
+  border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow: 
+    0 1px 3px 0 hsl(var(--foreground) / 0.05),
+    0 4px 6px -4px hsl(var(--foreground) / 0.05);
+}
+
+.dark .card {
+  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%);
+  border: 1px solid hsl(var(--border) / 0.8);
+  box-shadow: 
+    0 1px 3px 0 hsl(var(--primary) / 0.1),
+    0 4px 6px -4px hsl(var(--primary) / 0.1),
+    inset 0 1px 0 0 hsl(var(--primary) / 0.1);
+}
+
+/* Insight score gradient indicators */
+.insight-score-high {
+  background: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(var(--success) / 0.8) 100%);
+}
+
+.insight-score-medium {
+  background: linear-gradient(135deg, hsl(var(--warning)) 0%, hsl(var(--warning) / 0.8) 100%);
+}
+
+.insight-score-low {
+  background: linear-gradient(135deg, hsl(var(--destructive)) 0%, hsl(var(--destructive) / 0.8) 100%);
+}
+
+/* AI-themed glow effects */
+.ai-glow {
+  box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+}
+
+.dark .ai-glow {
+  box-shadow: 
+    0 0 20px hsl(var(--primary) / 0.4),
+    0 0 40px hsl(var(--primary) / 0.2);
+}
+
+/* Radix UI Select Component Enhancements */
+[data-radix-select-content] {
+  background: hsl(var(--popover)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 
+    0 4px 6px -1px hsl(var(--foreground) / 0.1),
+    0 2px 4px -1px hsl(var(--foreground) / 0.06) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.dark [data-radix-select-content] {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 
+    0 4px 6px -1px hsl(var(--primary) / 0.1),
+    0 2px 4px -1px hsl(var(--primary) / 0.06),
+    0 10px 15px -3px hsl(var(--foreground) / 0.1) !important;
+}
+
+[data-radix-select-item] {
+  background: transparent !important;
+  color: hsl(var(--popover-foreground)) !important;
+}
+
+[data-radix-select-item]:hover,
+[data-radix-select-item][data-highlighted] {
+  background: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+.dark [data-radix-select-item] {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+.dark [data-radix-select-item]:hover,
+.dark [data-radix-select-item][data-highlighted] {
+  background: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+[data-radix-select-trigger] {
+  background: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark [data-radix-select-trigger] {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  color: hsl(var(--card-foreground)) !important;
+}
+
+/* Navigation enhancements */
+nav {
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid hsl(var(--border) / 0.6);
+}
+
+.dark nav {
+  background: hsl(var(--card) / 0.95);
+  border-bottom: 1px solid hsl(var(--border) / 0.8);
+}
+
+/* Custom prose styles for markdown content */
+.prose {
+  max-width: none;
+  color: hsl(var(--foreground));
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.25;
+}
+
+.prose h1 { font-size: 1.875rem; }
+.prose h2 { font-size: 1.5rem; }
+.prose h3 { font-size: 1.25rem; }
+.prose h4 { font-size: 1.125rem; }
+
+.prose p {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+  line-height: 1.6;
+}
+
+.prose strong {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose code {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.prose pre {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.prose pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.prose ul, .prose ol {
+  margin: 0.75em 0;
+  padding-left: 1.5em;
+}
+
+.prose li {
+  margin: 0.25em 0;
+}
+
+.prose blockquote {
+  border-left: 4px solid hsl(var(--border));
+  padding-left: 1rem;
+  margin: 1em 0;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+}
+
+.prose a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-decoration-color: hsl(var(--primary) / 0.3);
+  text-underline-offset: 2px;
+}
+
+.prose a:hover {
+  text-decoration-color: hsl(var(--primary));
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.prose th, .prose td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.prose th {
+  background: hsl(var(--muted));
+  font-weight: 600;
+}
+
+/* Dark mode prose adjustments */
+.dark .prose {
+  color: hsl(var(--foreground));
+}
+
+.dark .prose h1, .dark .prose h2, .dark .prose h3, .dark .prose h4, .dark .prose h5, .dark .prose h6 {
+  color: hsl(var(--foreground));
+}
+
+.dark .prose strong {
+  color: hsl(var(--foreground));
+}
+
+.dark .prose code {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+.dark .prose pre {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
 }

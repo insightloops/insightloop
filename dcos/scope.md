@@ -1,0 +1,8 @@
+- **Entities:** Company → Product Portfolio → Feature Backlog → Objectives (OKRs)
+- **Ingest** one feedback type of source (e.g., VOC via CSV upload)
+- **Store** heterogeneous feedback (schemaless/minimal schema)
+- **AI Agents:** Build schema, cluster feedback, sentiment analysis, themes building, GPT + rule-based summarizer, Threading logic to create **insight cards** with linked **evidence** (quoted items), and finally, insight scoring model
+- Linking insights to Features, OKRs, and Product Areas
+- Strategic Prioritization Engine
+- **Jira Product Discovery integration:** search ideas & **attach/link insights** (comment or insight entry), create story/epic stubs
+- **UI:** Company info (product portfolio, OKRs, etc), Insights board, Evidence drill-down, Feedback list, Jira linking flow, Integrations setup
