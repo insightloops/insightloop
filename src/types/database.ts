@@ -1,154 +1,49 @@
-// Database types generated from Supabase schema
-export interface Database {
-  public: {
-    Tables: {
-      companies: {
-        Row: Company
-        Insert: Omit<Company, 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Omit<Company, 'id' | 'created_at' | 'updated_at'>>
-      }
-      products: {
-        Row: Product
-        Insert: Omit<Product, 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Omit<Product, 'id' | 'created_at' | 'updated_at'>>
-      }
-      objectives: {
-        Row: Objective
-        Insert: Omit<Objective, 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Omit<Objective, 'id' | 'created_at' | 'updated_at'>>
-      }
-      features: {
-        Row: Feature
-        Insert: Omit<Feature, 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Omit<Feature, 'id' | 'created_at' | 'updated_at'>>
-      }
-      feedback_items: {
-        Row: FeedbackItem
-        Insert: Omit<FeedbackItem, 'id' | 'created_at'>
-        Update: Partial<Omit<FeedbackItem, 'id' | 'created_at'>>
-      }
-      insights: {
-        Row: Insight
-        Insert: Omit<Insight, 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Omit<Insight, 'id' | 'created_at' | 'updated_at'>>
-      }
-      insight_feedback_links: {
-        Row: InsightFeedbackLink
-        Insert: Omit<InsightFeedbackLink, 'created_at'>
-        Update: Partial<Omit<InsightFeedbackLink, 'created_at'>>
-      }
-      insight_feature_links: {
-        Row: InsightFeatureLink
-        Insert: Omit<InsightFeatureLink, 'created_at'>
-        Update: Partial<Omit<InsightFeatureLink, 'created_at'>>
-      }
-      insight_objective_links: {
-        Row: InsightObjectiveLink
-        Insert: Omit<InsightObjectiveLink, 'created_at'>
-        Update: Partial<Omit<InsightObjectiveLink, 'created_at'>>
-      }
-    }
-  }
-}
+// Import auto-generated database types from Supabase
+import { Database as GeneratedDatabase } from './database-generated';
 
-// Core entity types
-export interface Company {
-  id: string
-  name: string
-  slug: string
-  industry: string | null
-  size: string | null
-  created_at: string
-  updated_at: string
-}
+// Re-export the generated Database type
+export type Database = GeneratedDatabase;
 
-export interface Product {
-  id: string
-  company_id: string
-  name: string
-  description: string | null
-  product_area: string | null
-  created_at: string
-  updated_at: string
-}
-
-export interface Objective {
-  id: string
-  company_id: string
-  title: string
-  description: string | null
-  target_value: number | null
-  current_value: number
-  quarter: string | null
-  year: number | null
-  status: string
-  created_at: string
-  updated_at: string
-}
-
-export interface Feature {
-  id: string
-  product_id: string
-  company_id: string
-  title: string
-  description: string | null
-  status: string
-  priority: string
-  effort_score: number | null
-  business_value: number | null
-  created_at: string
-  updated_at: string
-}
-
-export interface FeedbackItem {
-  id: string
-  company_id: string
-  source: string
-  content: string
-  sentiment: string | null
-  product_area: string | null
-  user_metadata: Record<string, any>
-  submitted_at: string | null
-  processed_at: string | null
-  created_at: string
-}
-
-export interface Insight {
-  id: string
-  company_id: string
-  title: string
-  summary: string
-  theme: string | null
-  segment_context: Record<string, any>
-  insight_score: number
-  urgency_score: number
-  volume_score: number
-  value_alignment_score: number
-  status: string
-  created_at: string
-  updated_at: string
-}
+// Core entity types (derived from generated database types)
+export type Company = Database['public']['Tables']['companies']['Row'];
+export type Product = Database['public']['Tables']['products']['Row'];
+export type ProductArea = Database['public']['Tables']['product_areas']['Row'];
+export type Objective = Database['public']['Tables']['objectives']['Row'];
+export type Feature = Database['public']['Tables']['features']['Row'];
+export type FeedbackItem = Database['public']['Tables']['feedback_items']['Row'];
+export type Insight = Database['public']['Tables']['insights']['Row'];
 
 // Junction table types
-export interface InsightFeedbackLink {
-  insight_id: string
-  feedback_id: string
-  relevance_score: number
-  created_at: string
+export type InsightFeedbackLink = Database['public']['Tables']['insight_feedback_links']['Row'];
+export type InsightFeatureLink = Database['public']['Tables']['insight_feature_links']['Row'];
+export type InsightObjectiveLink = Database['public']['Tables']['insight_objective_links']['Row'];
+
+// Insert and Update types
+export type CompanyInsert = Database['public']['Tables']['companies']['Insert'];
+export type ProductInsert = Database['public']['Tables']['products']['Insert'];
+export type ProductAreaInsert = Database['public']['Tables']['product_areas']['Insert'];
+export type FeatureInsert = Database['public']['Tables']['features']['Insert'];
+export type FeedbackItemInsert = Database['public']['Tables']['feedback_items']['Insert'];
+
+export type CompanyUpdate = Database['public']['Tables']['companies']['Update'];
+export type ProductUpdate = Database['public']['Tables']['products']['Update'];
+export type ProductAreaUpdate = Database['public']['Tables']['product_areas']['Update'];
+export type FeatureUpdate = Database['public']['Tables']['features']['Update'];
+
+// Enums for feature status and priority
+export enum FeatureStatus {
+  PLANNED = 'planned',
+  IN_PROGRESS = 'in_progress', 
+  COMPLETED = 'completed',
+  ON_HOLD = 'on_hold',
+  CANCELLED = 'cancelled'
 }
 
-export interface InsightFeatureLink {
-  insight_id: string
-  feature_id: string
-  impact_score: number
-  created_at: string
-}
-
-export interface InsightObjectiveLink {
-  insight_id: string
-  objective_id: string
-  alignment_score: number
-  created_at: string
+export enum FeaturePriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  CRITICAL = 'critical'
 }
 
 // Extended types with relationships
@@ -160,11 +55,29 @@ export interface InsightWithEvidence extends Insight {
 
 export interface FeatureWithInsights extends Feature {
   insights?: Insight[]
-  product?: Product
+  product_area?: ProductArea
 }
 
 export interface FeedbackWithInsights extends FeedbackItem {
   insights?: Insight[]
+}
+
+export interface ProductWithAreas extends Product {
+  product_areas?: ProductArea[]
+  area_count?: number
+  feature_count?: number
+}
+
+export interface ProductAreaWithFeatures extends ProductArea {
+  features?: Feature[]
+  feature_count?: number
+  parent_area?: ProductArea
+  child_areas?: ProductArea[]
+}
+
+export interface ProductAreaHierarchy extends ProductArea {
+  children?: ProductAreaHierarchy[]
+  features?: Feature[]
 }
 
 // API response types
@@ -199,9 +112,23 @@ export interface InsightFilters {
 }
 
 export interface FeatureFilters {
-  status?: string[]
-  priority?: string[]
+  status?: FeatureStatus[]
+  priority?: FeaturePriority[]
+  product_area_id?: string
+  company_id?: string
+}
+
+export interface ProductAreaFilters {
   product_id?: string
+  parent_area_id?: string | null
+  top_level?: boolean
+  company_id?: string
+}
+
+export interface ProductFilters {
+  company_id?: string
+  include_areas?: boolean
+  include_features?: boolean
 }
 
 // Re-export all types for convenience

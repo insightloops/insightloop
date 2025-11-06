@@ -21,9 +21,23 @@ CREATE TABLE products (
     company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     description TEXT,
-    product_area TEXT, -- frontend, backend, mobile, etc.
+    metadata JSONB DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Product Areas table (hierarchical organization within products)
+CREATE TABLE product_areas (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    keywords TEXT[] DEFAULT '{}',
+    parent_area_id UUID REFERENCES product_areas(id) ON DELETE SET NULL,
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(product_id, name)
 );
 
 -- Objectives/OKRs table
@@ -44,14 +58,15 @@ CREATE TABLE objectives (
 -- Features/Backlog table
 CREATE TABLE features (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    product_area_id UUID NOT NULL REFERENCES product_areas(id) ON DELETE CASCADE,
     company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
+    name TEXT NOT NULL,
     description TEXT,
-    status TEXT DEFAULT 'backlog', -- backlog, in_progress, completed, cancelled
-    priority TEXT DEFAULT 'medium', -- low, medium, high, critical
+    status TEXT DEFAULT 'planned' CHECK (status IN ('planned', 'in_progress', 'completed', 'on_hold', 'cancelled')),
+    priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
     effort_score INTEGER CHECK (effort_score >= 1 AND effort_score <= 10),
     business_value INTEGER CHECK (business_value >= 1 AND business_value <= 10),
+    metadata JSONB DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -117,9 +132,14 @@ CREATE TABLE insight_objective_links (
 -- Create indexes for better performance
 CREATE INDEX idx_companies_slug ON companies(slug);
 CREATE INDEX idx_products_company_id ON products(company_id);
+CREATE INDEX idx_product_areas_product ON product_areas(product_id);
+CREATE INDEX idx_product_areas_parent ON product_areas(parent_area_id);
+CREATE INDEX idx_product_areas_keywords ON product_areas USING GIN(keywords);
 CREATE INDEX idx_objectives_company_id ON objectives(company_id);
 CREATE INDEX idx_features_company_id ON features(company_id);
-CREATE INDEX idx_features_product_id ON features(product_id);
+CREATE INDEX idx_features_area ON features(product_area_id);
+CREATE INDEX idx_features_status ON features(status);
+CREATE INDEX idx_features_priority ON features(priority);
 CREATE INDEX idx_feedback_company_id ON feedback_items(company_id);
 CREATE INDEX idx_feedback_source ON feedback_items(source);
 CREATE INDEX idx_feedback_sentiment ON feedback_items(sentiment);
@@ -127,40 +147,4 @@ CREATE INDEX idx_insights_company_id ON insights(company_id);
 CREATE INDEX idx_insights_theme ON insights(theme);
 CREATE INDEX idx_insights_score ON insights(insight_score DESC);
 
--- Create updated_at trigger function
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Apply updated_at triggers
-CREATE TRIGGER update_companies_updated_at BEFORE UPDATE ON companies FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_objectives_updated_at BEFORE UPDATE ON objectives FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_features_updated_at BEFORE UPDATE ON features FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_insights_updated_at BEFORE UPDATE ON insights FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- Row Level Security (RLS) policies for multi-tenancy
-ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE objectives ENABLE ROW LEVEL SECURITY;
-ALTER TABLE features ENABLE ROW LEVEL SECURITY;
-ALTER TABLE feedback_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE insights ENABLE ROW LEVEL SECURITY;
-ALTER TABLE insight_feedback_links ENABLE ROW LEVEL SECURITY;
-ALTER TABLE insight_feature_links ENABLE ROW LEVEL SECURITY;
-ALTER TABLE insight_objective_links ENABLE ROW LEVEL SECURITY;
-
--- Basic RLS policies (can be refined later with authentication)
-CREATE POLICY "Users can view own company data" ON companies FOR SELECT USING (true);
-CREATE POLICY "Users can view own products" ON products FOR SELECT USING (true);
-CREATE POLICY "Users can view own objectives" ON objectives FOR SELECT USING (true);
-CREATE POLICY "Users can view own features" ON features FOR SELECT USING (true);
-CREATE POLICY "Users can view own feedback" ON feedback_items FOR SELECT USING (true);
-CREATE POLICY "Users can view own insights" ON insights FOR SELECT USING (true);
-CREATE POLICY "Users can view insight links" ON insight_feedback_links FOR SELECT USING (true);
-CREATE POLICY "Users can view feature links" ON insight_feature_links FOR SELECT USING (true);
-CREATE POLICY "Users can view objective links" ON insight_objective_links FOR SELECT USING (true);
+-- Schema complete - no triggers or RLS policies for now
