@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Database } from '@/types/database'
+import { useUserIdSync } from '@/hooks/useCurrentUser'
 
 type Product = Database['public']['Tables']['products']['Row']
 
@@ -24,28 +25,35 @@ interface ProductsResponse {
   products: Product[]
 }
 
-export function useProducts(companyId?: string): UseProductsResult {
+export function useProducts(companyId: string | undefined): UseProductsResult {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const userId = useUserIdSync()
 
   const fetchProducts = async () => {
+    if (!companyId) {
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
       
-      const url = companyId 
-        ? `/api/products?company_id=${companyId}`
-        : '/api/products'
-      
-      const response = await fetch(url)
+      const response = await fetch(`/api/companies/${companyId}/products`, {
+        headers: {
+          'x-user-id': userId,
+          'Content-Type': 'application/json'
+        }
+      })
       
       if (!response.ok) {
         throw new Error(`Failed to fetch products: ${response.statusText}`)
       }
       
-      const data: ProductsResponse = await response.json()
-      setProducts(data.products)
+      const data = await response.json()
+      setProducts(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch products')
     } finally {
@@ -55,10 +63,11 @@ export function useProducts(companyId?: string): UseProductsResult {
 
   const createProduct = async (productData: CreateProductData): Promise<Product> => {
     try {
-      const response = await fetch('/api/products', {
+      const response = await fetch(`/api/companies/${companyId}/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': userId,
         },
         body: JSON.stringify(productData),
       });
@@ -68,8 +77,7 @@ export function useProducts(companyId?: string): UseProductsResult {
         throw new Error(errorData.error || 'Failed to create product');
       }
 
-      const data = await response.json();
-      const newProduct = data.product;
+      const newProduct = await response.json();
       
       // Update local state
       setProducts(prev => [newProduct, ...prev]);

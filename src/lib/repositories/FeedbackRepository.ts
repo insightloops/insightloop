@@ -1,5 +1,8 @@
 import { SupabaseClient } from '@supabase/supabase-js'
-import { FeedbackItem } from '@/types/database'
+import { Database } from '@/types/database'
+
+type FeedbackItem = Database['public']['Tables']['feedback_items']['Row']
+type FeedbackInsert = Database['public']['Tables']['feedback_items']['Insert']
 
 export class FeedbackRepository {
   private supabase: SupabaseClient
@@ -8,15 +11,7 @@ export class FeedbackRepository {
     this.supabase = supabase
   }
 
-  async create(data: {
-    company_id: string
-    source: string
-    content: string
-    sentiment?: string
-    product_area?: string
-    user_metadata?: Record<string, any>
-    submitted_at?: string
-  }): Promise<FeedbackItem> {
+  async create(data: FeedbackInsert): Promise<FeedbackItem> {
     const { data: result, error } = await this.supabase
       .from('feedback_items')
       .insert(data)
@@ -30,15 +25,7 @@ export class FeedbackRepository {
     return result as FeedbackItem
   }
 
-  async createMany(items: Array<{
-    company_id: string
-    source: string
-    content: string
-    sentiment?: string
-    product_area?: string
-    user_metadata?: Record<string, any>
-    submitted_at?: string
-  }>): Promise<FeedbackItem[]> {
+  async createMany(items: FeedbackInsert[]): Promise<FeedbackItem[]> {
     const { data: result, error } = await this.supabase
       .from('feedback_items')
       .insert(items)

@@ -1,8 +1,9 @@
 import { supabase } from '@/lib/supabase'
 import { NextRequest, NextResponse } from 'next/server'
+import { createAuthenticatedHandler, AuthenticatedRequest } from '@/lib/middleware/auth'
 
-export async function GET(
-  request: NextRequest,
+async function handleGET(
+  request: AuthenticatedRequest,
   context: { params: Promise<{ companyId: string }> }
 ) {
   try {
@@ -32,8 +33,8 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: NextRequest,
+async function handlePOST(
+  request: AuthenticatedRequest,
   context: { params: Promise<{ companyId: string }> }
 ) {
   try {
@@ -41,9 +42,9 @@ export async function POST(
     const body = await request.json()
     const { name, type, description } = body
 
-    if (!name || !type) {
+    if (!name) {
       return NextResponse.json(
-        { error: 'Product name and type are required' },
+        { error: 'Product name is required' },
         { status: 400 }
       )
     }
@@ -70,8 +71,9 @@ export async function POST(
         {
           company_id: companyId,
           name,
-          type,
           description: description || null,
+          metadata: type ? { type } : null,
+          user_id: request.userId,
         },
       ])
       .select()
@@ -93,4 +95,23 @@ export async function POST(
       { status: 500 }
     )
   }
+}
+
+// Export authenticated handlers
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ companyId: string }> }
+) {
+  return createAuthenticatedHandler((authRequest: AuthenticatedRequest) => 
+    handleGET(authRequest, context)
+  )(request)
+}
+
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ companyId: string }> }
+) {
+  return createAuthenticatedHandler((authRequest: AuthenticatedRequest) => 
+    handlePOST(authRequest, context)
+  )(request)
 }

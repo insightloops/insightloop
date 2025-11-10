@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { FeatureService } from '@/lib/services/FeatureService'
+import { createAuthenticatedHandler, AuthenticatedRequest } from '@/lib/middleware/auth'
 
 const featureService = new FeatureService()
 
-export async function GET(request: NextRequest) {
+async function handleGET(request: AuthenticatedRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const companyId = searchParams.get('company_id')
@@ -11,10 +12,17 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const priority = searchParams.get('priority')
     const format = searchParams.get('format') // 'roadmap' for roadmap view
+    const assigned = searchParams.get('assigned') // 'me' for user's assigned features
+
+    // Get user's assigned features
+    if (assigned === 'me') {
+      const features = await featureService.getAssignedFeatures(request.userId)
+      return NextResponse.json(features)
+    }
 
     // Get roadmap view
     if (format === 'roadmap' && companyId) {
-      const roadmap = await featureService.getRoadmap(companyId)
+      const roadmap = await featureService.getRoadmap(companyId, request.userId)
       return NextResponse.json(roadmap)
     }
 
@@ -46,13 +54,20 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function handlePOST(request: AuthenticatedRequest) {
   try {
     const featureData = await request.json()
-    const feature = await featureService.createFeature(featureData)
+    const feature = await featureService.createFeature({
+      ...featureData,
+      userId: request.userId
+    })
     return NextResponse.json(feature, { status: 201 })
   } catch (error: any) {
     console.error('Error creating feature:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
+
+// Export authenticated handlers
+export const GET = createAuthenticatedHandler(handleGET);
+export const POST = createAuthenticatedHandler(handlePOST);

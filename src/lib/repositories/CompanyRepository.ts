@@ -1,5 +1,8 @@
 import { SupabaseClient } from '@supabase/supabase-js'
-import { Company } from '@/types/database'
+import { Database } from '@/types/database'
+
+type Company = Database['public']['Tables']['companies']['Row']
+type CompanyInsert = Database['public']['Tables']['companies']['Insert']
 
 export class CompanyRepository {
   private supabase: SupabaseClient
@@ -13,10 +16,19 @@ export class CompanyRepository {
     slug: string
     industry?: string
     size?: string
+    userId: string
   }): Promise<Company> {
+    const insertData = {
+      name: data.name,
+      slug: data.slug,
+      industry: data.industry,
+      size: data.size,
+      user_id: data.userId
+    }
+
     const { data: result, error } = await this.supabase
       .from('companies')
-      .insert(data)
+      .insert(insertData)
       .select()
       .single()
 
@@ -61,37 +73,45 @@ export class CompanyRepository {
     return data as Company
   }
 
-  async findMany(filters?: {
-    industry?: string
-    size?: string
-  }, limit?: number, offset?: number): Promise<Company[]> {
-    let query = this.supabase
+  async findAll(): Promise<Company[]> {
+    const { data, error } = await this.supabase
       .from('companies')
       .select('*')
-
-    if (filters?.industry) {
-      query = query.eq('industry', filters.industry)
-    }
-    if (filters?.size) {
-      query = query.eq('size', filters.size)
-    }
-
-    if (limit) {
-      query = query.limit(limit)
-    }
-    if (offset) {
-      query = query.range(offset, offset + (limit || 10) - 1)
-    }
-
-    query = query.order('created_at', { ascending: false })
-
-    const { data, error } = await query
+      .order('created_at', { ascending: false })
 
     if (error) {
       throw new Error(`Failed to find companies: ${error.message}`)
     }
 
-    return (data || []) as Company[]
+    return data as Company[]
+  }
+
+  async findAllForUser(userId: string): Promise<Company[]> {
+    const { data, error } = await this.supabase
+      .from('companies')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new Error(`Failed to find companies for user: ${error.message}`)
+    }
+
+    return data as Company[]
+  }
+
+  async findOwnedByUser(userId: string): Promise<Company[]> {
+    const { data, error } = await this.supabase
+      .from('companies')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new Error(`Failed to find owned companies: ${error.message}`)
+    }
+
+    return data as Company[]
   }
 
   async update(id: string, data: {
@@ -125,14 +145,27 @@ export class CompanyRepository {
     }
   }
 
+  async validateUserAccess(companyId: string, userId: string): Promise<boolean> {
+    const company = await this.findById(companyId)
+    if (!company) {
+      return false
+    }
+    
+    return company.user_id === userId
+  }
+
   async count(filters?: {
     industry?: string
     size?: string
+    userId?: string
   }): Promise<number> {
     let query = this.supabase
       .from('companies')
       .select('*', { count: 'exact', head: true })
 
+    if (filters?.userId) {
+      query = query.eq('user_id', filters.userId)
+    }
     if (filters?.industry) {
       query = query.eq('industry', filters.industry)
     }

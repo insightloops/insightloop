@@ -12,7 +12,7 @@ import Link from 'next/link';
 export default function ProductsPage() {
   const router = useRouter();
   const userId = useUserIdSync();
-  const { companies, loading } = useCompanies();
+  const { companies, loading } = useCompanies(userId);
 
   // If user has only one company, redirect to that company's products
   useEffect(() => {

@@ -8,6 +8,8 @@ export interface CreateCompanyData {
   name: string;
   industry?: string;
   size?: string;
+  userId: string;
+  createdByUserId?: string;
 }
 
 export class CompanyService {
@@ -19,9 +21,17 @@ export class CompanyService {
 
   async getAllCompanies(): Promise<Company[]> {
     try {
-      return await this.companyRepository.findMany({});
+      return await this.companyRepository.findAll();
     } catch (error) {
       throw new Error(`Failed to fetch companies: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async getCompaniesForUser(userId: string): Promise<Company[]> {
+    try {
+      return await this.companyRepository.findAllForUser(userId);
+    } catch (error) {
+      throw new Error(`Failed to fetch companies for user: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -40,7 +50,9 @@ export class CompanyService {
         name: data.name,
         slug: slug,
         industry: data.industry,
-        size: data.size
+        size: data.size,
+        userId: data.userId,
+        createdByUserId: data.createdByUserId
       });
     } catch (error) {
       throw new Error(`Failed to create company: ${error instanceof Error ? error.message : 'Unknown error'}`);

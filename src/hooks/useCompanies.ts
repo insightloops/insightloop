@@ -1,134 +1,128 @@
-'use client'
-
 import { useState, useEffect } from 'react'
-import { Company } from '@/types/database'
+import { Database } from '@/types/database'
+import { useUserIdSync } from '@/hooks/useCurrentUser'
 
-interface CreateCompanyData {
-  name: string;
-  industry?: string;
-  size?: string;
-}
+type Company = Database['public']['Tables']['companies']['Row']
 
-interface UseCompaniesResult {
-  companies: Company[]
-  loading: boolean
-  error: string | null
-  createCompany: (data: CreateCompanyData) => Promise<Company>
-  refetch: () => Promise<void>
-}
-
-interface CompaniesResponse {
-  companies: Company[]
-}
-
-export function useCompanies(): UseCompaniesResult {
+export function useCompanies() {
   const [companies, setCompanies] = useState<Company[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const userId = useUserIdSync()
 
-  const fetchCompanies = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      
-      const response = await fetch('/api/companies')
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch companies: ${response.statusText}`)
-      }
-      
-      const data: CompaniesResponse = await response.json()
-      setCompanies(data.companies)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch companies')
-    } finally {
+  useEffect(() => {
+    if (!userId) {
       setLoading(false)
+      return
     }
-  }
 
-  const createCompany = async (companyData: CreateCompanyData): Promise<Company> => {
+    const fetchCompanies = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/companies', {
+          headers: {
+            'x-user-id': userId,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch companies')
+        }
+
+        const data = await response.json()
+        setCompanies(data.companies || [])
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCompanies()
+  }, [userId])
+
+  const createCompany = async (companyData: {
+    name: string
+    industry?: string
+    size?: string
+  }) => {
+    if (!userId) {
+      throw new Error('User ID is required')
+    }
+
     try {
       const response = await fetch('/api/companies', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'x-user-id': userId,
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(companyData),
-      });
+        body: JSON.stringify(companyData)
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create company');
+        throw new Error('Failed to create company')
       }
 
-      const data = await response.json();
-      const newCompany = data.company;
-      
-      // Update local state
-      setCompanies(prev => [newCompany, ...prev]);
-      
-      return newCompany;
+      const data = await response.json()
+      setCompanies(prev => [...prev, data.company])
+      return data.company
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create company';
-      throw new Error(errorMessage);
+      setError(err instanceof Error ? err.message : 'Unknown error')
+      throw err
     }
-  };
-
-  useEffect(() => {
-    fetchCompanies()
-  }, [])
+  }
 
   return {
     companies,
     loading,
     error,
-    createCompany,
-    refetch: fetchCompanies
+    createCompany
   }
 }
 
-interface UseCompanyResult {
-  company: Company | null
-  loading: boolean
-  error: string | null
-  refetch: () => Promise<void>
-}
-
-export function useCompany(companyId: string): UseCompanyResult {
+export function useCompany(companyId: string | null) {
   const [company, setCompany] = useState<Company | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const fetchCompany = async () => {
-    if (!companyId) return
-
-    try {
-      setLoading(true)
-      setError(null)
-      
-      const response = await fetch(`/api/companies/${companyId}`)
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch company: ${response.statusText}`)
-      }
-      
-      const data = await response.json()
-      setCompany(data.company)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch company')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const userId = useUserIdSync()
 
   useEffect(() => {
+    if (!companyId || !userId) {
+      setLoading(false)
+      return
+    }
+
+    const fetchCompany = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch(`/api/companies/${companyId}`, {
+          headers: {
+            'x-user-id': userId,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch company')
+        }
+
+        const data = await response.json()
+        setCompany(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchCompany()
-  }, [companyId])
+  }, [companyId, userId])
 
   return {
     company,
     loading,
-    error,
-    refetch: fetchCompany
+    error
   }
 }

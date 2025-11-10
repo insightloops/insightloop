@@ -1,16 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { CompanyRepository } from '@/lib/repositories/CompanyRepository'
+import { createAuthenticatedHandler, AuthenticatedRequest } from '@/lib/middleware/auth'
 
-export async function GET(
-  request: NextRequest,
+async function handleGET(
+  request: AuthenticatedRequest,
   { params }: { params: Promise<{ companyId: string }> }
 ) {
   try {
     const { companyId } = await params
     const companyRepository = new CompanyRepository(supabase)
-    const company = await companyRepository.findById(companyId)
+    
+    // Validate user access to this company
+    const hasAccess = await companyRepository.validateUserAccess(companyId, request.userId)
+    if (!hasAccess) {
+      return NextResponse.json(
+        { error: 'Company not found or access denied' },
+        { status: 404 }
+      )
+    }
 
+    const company = await companyRepository.findById(companyId)
     if (!company) {
       return NextResponse.json(
         { error: 'Company not found' },
@@ -18,7 +28,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ data: company })
+    return NextResponse.json(company)
   } catch (error) {
     console.error('Error fetching company:', error)
     return NextResponse.json(
@@ -28,8 +38,8 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
+async function handlePUT(
+  request: AuthenticatedRequest,
   { params }: { params: Promise<{ companyId: string }> }
 ) {
   try {
@@ -39,6 +49,15 @@ export async function PUT(
 
     const companyRepository = new CompanyRepository(supabase)
     
+    // Validate user access to this company
+    const hasAccess = await companyRepository.validateUserAccess(companyId, request.userId)
+    if (!hasAccess) {
+      return NextResponse.json(
+        { error: 'Company not found or access denied' },
+        { status: 404 }
+      )
+    }
+
     // Check if company exists
     const existingCompany = await companyRepository.findById(companyId)
     if (!existingCompany) {
@@ -76,14 +95,23 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
+async function handleDELETE(
+  request: AuthenticatedRequest,
   { params }: { params: Promise<{ companyId: string }> }
 ) {
   try {
     const { companyId } = await params
     const companyRepository = new CompanyRepository(supabase)
     
+    // Validate user access to this company
+    const hasAccess = await companyRepository.validateUserAccess(companyId, request.userId)
+    if (!hasAccess) {
+      return NextResponse.json(
+        { error: 'Company not found or access denied' },
+        { status: 404 }
+      )
+    }
+
     // Check if company exists
     const existingCompany = await companyRepository.findById(companyId)
     if (!existingCompany) {
@@ -103,4 +131,32 @@ export async function DELETE(
       { status: 500 }
     )
   }
+}
+
+// Export authenticated handlers
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ companyId: string }> }
+) {
+  return createAuthenticatedHandler((authRequest: AuthenticatedRequest) => 
+    handleGET(authRequest, context)
+  )(request)
+}
+
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ companyId: string }> }
+) {
+  return createAuthenticatedHandler((authRequest: AuthenticatedRequest) => 
+    handlePUT(authRequest, context)
+  )(request)
+}
+
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ companyId: string }> }
+) {
+  return createAuthenticatedHandler((authRequest: AuthenticatedRequest) => 
+    handleDELETE(authRequest, context)
+  )(request)
 }

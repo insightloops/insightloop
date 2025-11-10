@@ -5,6 +5,7 @@ import { useState } from "react";
 import { InsightsDashboard } from "@/components/InsightsDashboard";
 import { EvidenceModal } from "@/components/EvidenceModal";
 import { useCompanies } from "@/hooks/useCompanies";
+import { useUserIdSync } from "@/hooks";
 import { Insight } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +17,8 @@ export default function Dashboard() {
   const [selectedInsight, setSelectedInsight] = useState<Insight | null>(null)
   const [selectedCompanyId, setSelectedCompanyId] = useState('550e8400-e29b-41d4-a716-446655440000');
   
-  const { companies, loading: companiesLoading } = useCompanies();
+  const userId = useUserIdSync();
+  const { companies, loading: companiesLoading } = useCompanies(userId);
 
   const handleInsightClick = (insight: Insight) => {
     setSelectedInsight(insight)

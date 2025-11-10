@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Insight, InsightWithEvidence } from '@/types/database'
+import { useUserIdSync } from '@/hooks/useCurrentUser'
 
 interface InsightFilters {
   theme?: string[]

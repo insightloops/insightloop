@@ -248,11 +248,22 @@ export class FeatureRepository extends BaseRepository {
   /**
    * Create a new feature
    */
-  async create(featureData: FeatureInsert): Promise<Feature> {
+  async create(featureData: FeatureInsert & {
+    userId: string
+    createdByUserId?: string
+    assignedToUserId?: string
+  }): Promise<Feature> {
     try {
+      const insertData: FeatureInsert = {
+        ...featureData,
+        user_id: featureData.userId,
+        created_by_user_id: featureData.createdByUserId || featureData.userId,
+        assigned_to_user_id: featureData.assignedToUserId
+      }
+
       const { data, error } = await supabase
         .from('features')
-        .insert(featureData)
+        .insert(insertData)
         .select()
         .single()
 
@@ -264,10 +275,138 @@ export class FeatureRepository extends BaseRepository {
   }
 
   /**
+   * Get features assigned to a user
+   */
+  async getAssignedToUser(userId: string): Promise<Feature[]> {
+    try {
+      const { data, error } = await supabase
+        .from('features')
+        .select(`
+          *,
+          product_area:product_areas(
+            id,
+            name,
+            product:products(
+              id,
+              name,
+              company:companies(id, name)
+            )
+          )
+        `)
+        .eq('assigned_to_user_id', userId)
+        .order('priority', { ascending: false })
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    } catch (error: any) {
+      throw new Error(`Failed to get assigned features: ${error.message}`)
+    }
+  }
+
+  /**
+   * Get features created by a user
+   */
+  async getCreatedByUser(userId: string): Promise<Feature[]> {
+    try {
+      const { data, error } = await supabase
+        .from('features')
+        .select(`
+          *,
+          product_area:product_areas(
+            id,
+            name,
+            product:products(
+              id,
+              name,
+              company:companies(id, name)
+            )
+          )
+        `)
+        .eq('created_by_user_id', userId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    } catch (error: any) {
+      throw new Error(`Failed to get created features: ${error.message}`)
+    }
+  }
+
+  /**
+   * Get features owned by a user
+   */
+  async getOwnedByUser(userId: string): Promise<Feature[]> {
+    try {
+      const { data, error } = await supabase
+        .from('features')
+        .select(`
+          *,
+          product_area:product_areas(
+            id,
+            name,
+            product:products(
+              id,
+              name,
+              company:companies(id, name)
+            )
+          )
+        `)
+        .eq('user_id', userId)
+        .order('priority', { ascending: false })
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    } catch (error: any) {
+      throw new Error(`Failed to get owned features: ${error.message}`)
+    }
+  }
+
+  /**
+   * Assign feature to user
+   */
+  async assignToUser(featureId: string, assignedUserId: string, currentUserId: string): Promise<Feature> {
+    try {
+      // First verify user has permission to assign
+      const feature = await this.getById(featureId)
+      if (!feature) {
+        throw new Error('Feature not found')
+      }
+
+      if (feature.user_id !== currentUserId && feature.created_by_user_id !== currentUserId) {
+        throw new Error('Insufficient permissions to assign feature')
+      }
+
+      const { data, error } = await supabase
+        .from('features')
+        .update({ assigned_to_user_id: assignedUserId })
+        .eq('id', featureId)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error: any) {
+      throw new Error(`Failed to assign feature: ${error.message}`)
+    }
+  }
+
+  /**
    * Update a feature
    */
-  async update(id: string, updates: FeatureUpdate): Promise<Feature> {
+  async update(id: string, updates: FeatureUpdate, userId: string): Promise<Feature> {
     try {
+      // First verify user has permission to update
+      const feature = await this.getById(id)
+      if (!feature) {
+        throw new Error('Feature not found')
+      }
+
+      if (feature.user_id !== userId && feature.created_by_user_id !== userId && feature.assigned_to_user_id !== userId) {
+        throw new Error('Insufficient permissions to update feature')
+      }
+
       const { data, error } = await supabase
         .from('features')
         .update(updates)

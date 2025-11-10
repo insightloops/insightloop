@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useUserIdSync } from '@/hooks'
 
 interface Company {
   name: string
@@ -301,6 +302,8 @@ const LoadingStep: React.FC<LoadingStepProps> = ({ company, product }) => {
   const [status, setStatus] = useState('Creating your company...')
   const [error, setError] = useState<string | null>(null)
 
+  const userId = useUserIdSync()
+
   React.useEffect(() => {
     const createCompanyAndProduct = async () => {
       try {
@@ -310,6 +313,7 @@ const LoadingStep: React.FC<LoadingStepProps> = ({ company, product }) => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'x-user-id': userId,
           },
           body: JSON.stringify(company),
         })
@@ -326,6 +330,7 @@ const LoadingStep: React.FC<LoadingStepProps> = ({ company, product }) => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'x-user-id': userId,
           },
           body: JSON.stringify(product),
         })

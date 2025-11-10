@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { CompanyService } from '@/lib/services/CompanyService';
+import { createAuthenticatedHandler, AuthenticatedRequest } from '@/lib/middleware/auth';
 
-export async function GET(request: NextRequest) {
+async function handleGET(request: AuthenticatedRequest) {
   try {
     const companyService = new CompanyService(supabase);
-    const companies = await companyService.getAllCompanies();
+    const companies = await companyService.getCompaniesForUser(request.userId);
 
     return NextResponse.json({ companies });
   } catch (error) {
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function handlePOST(request: AuthenticatedRequest) {
   try {
     const body = await request.json();
 
@@ -32,7 +33,8 @@ export async function POST(request: NextRequest) {
     const company = await companyService.createCompany({
       name: body.name,
       industry: body.industry,
-      size: body.size
+      size: body.size,
+      userId: request.userId
     });
 
     return NextResponse.json({ company }, { status: 201 });
@@ -43,3 +45,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// Export authenticated handlers
+export const GET = createAuthenticatedHandler(handleGET);
+export const POST = createAuthenticatedHandler(handlePOST);

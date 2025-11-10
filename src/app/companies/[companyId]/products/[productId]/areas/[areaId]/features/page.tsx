@@ -17,7 +17,8 @@ import { Feature, FeatureInsert, FeatureUpdate, FeatureStatus, FeaturePriority }
 export default function ProductAreaFeaturesPage() {
   const params = useParams()
   const router = useRouter()
-  const productId = params.id as string
+  const companyId = params.companyId as string
+  const productId = params.productId as string
   const areaId = params.areaId as string
 
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -50,8 +51,6 @@ export default function ProductAreaFeaturesPage() {
         .catch(console.error)
     }
   }, [productId])
-
-  const companyId = currentProduct?.company_id
 
   // Handle search suggestions
   useEffect(() => {

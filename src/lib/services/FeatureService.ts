@@ -30,6 +30,27 @@ export class FeatureService {
   }
 
   /**
+   * Get features assigned to a user
+   */
+  async getAssignedFeatures(userId: string): Promise<Feature[]> {
+    return this.featureRepository.getAssignedToUser(userId)
+  }
+
+  /**
+   * Get features created by a user
+   */
+  async getCreatedFeatures(userId: string): Promise<Feature[]> {
+    return this.featureRepository.getCreatedByUser(userId)
+  }
+
+  /**
+   * Get features owned by a user
+   */
+  async getOwnedFeatures(userId: string): Promise<Feature[]> {
+    return this.featureRepository.getOwnedByUser(userId)
+  }
+
+  /**
    * Get a feature with insights and relationships
    */
   async getFeatureWithInsights(id: string): Promise<FeatureWithInsights | null> {
@@ -39,7 +60,11 @@ export class FeatureService {
   /**
    * Create a new feature
    */
-  async createFeature(featureData: FeatureInsert): Promise<Feature> {
+  async createFeature(featureData: FeatureInsert & {
+    userId: string
+    createdByUserId?: string
+    assignedToUserId?: string
+  }): Promise<Feature> {
     // Validate required fields
     if (!featureData.name?.trim()) {
       throw new Error('Feature name is required')
@@ -80,13 +105,18 @@ export class FeatureService {
       metadata: featureData.metadata || {}
     }
 
-    return this.featureRepository.create(cleanedData)
+    return this.featureRepository.create({
+      ...cleanedData,
+      userId: featureData.userId,
+      createdByUserId: featureData.createdByUserId,
+      assignedToUserId: featureData.assignedToUserId
+    })
   }
 
   /**
    * Update a feature
    */
-  async updateFeature(id: string, updates: FeatureUpdate): Promise<Feature> {
+  async updateFeature(id: string, updates: FeatureUpdate, userId: string): Promise<Feature> {
     // Validate name if provided
     if (updates.name !== undefined && !updates.name?.trim()) {
       throw new Error('Feature name cannot be empty')
@@ -123,7 +153,7 @@ export class FeatureService {
       updated_at: new Date().toISOString()
     }
 
-    return this.featureRepository.update(id, cleanedUpdates)
+    return this.featureRepository.update(id, cleanedUpdates, userId)
   }
 
   /**
@@ -221,7 +251,7 @@ export class FeatureService {
   /**
    * Get the roadmap view (features grouped by status and priority)
    */
-  async getRoadmap(companyId: string): Promise<{
+  async getRoadmap(companyId: string, userId?: string): Promise<{
     planned: Feature[]
     in_progress: Feature[]
     completed: Feature[]
