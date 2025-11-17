@@ -207,4 +207,152 @@ export class FeedbackRepository {
     const areas = [...new Set((data || []).map(item => item.product_area).filter(Boolean))]
     return areas
   }
+
+  // Pipeline-specific methods
+
+  // Batch create feedback items (for CSV upload)
+  async bulkCreate(feedbackArray: Array<{
+    company_id: string
+    source: string
+    content: string
+    sentiment?: string
+    product_area?: string
+    user_metadata?: Record<string, any>
+    submitted_at?: string
+  }>): Promise<FeedbackItem[]> {
+    const { data, error } = await this.supabase
+      .from('feedback_items')
+      .insert(feedbackArray)
+      .select()
+
+    if (error) {
+      throw new Error(`Failed to bulk create feedback items: ${error.message}`)
+    }
+
+    return data as FeedbackItem[]
+  }
+
+  // Get enriched feedback with all relationships
+  async getEnriched(id: string): Promise<any> {
+    const { data, error } = await this.supabase
+      .from('feedback_enriched')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error) {
+      throw new Error(`Failed to get enriched feedback: ${error.message}`)
+    }
+
+    return data
+  }
+
+  // Update processed timestamp and enrichment status
+  async updateProcessedAt(feedbackId: string): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('feedback_items')
+      .update({ 
+        processed_at: new Date().toISOString(),
+        enriched_at: new Date().toISOString(),
+        enrichment_version: 1
+      })
+      .eq('id', feedbackId)
+
+    if (error) {
+      console.error('Error updating processed timestamp:', error)
+      return false
+    }
+
+    return true
+  }
+
+  // Link feedback to product area (many-to-many)
+  async addProductArea(
+    feedbackId: string, 
+    productAreaId: string, 
+    confidence: number = 1.0,
+    taggedBy: 'ai' | 'manual' = 'ai'
+  ): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('feedback_product_areas')
+      .insert({
+        feedback_id: feedbackId,
+        product_area_id: productAreaId,
+        confidence_score: confidence,
+        tagged_by: taggedBy
+      })
+
+    if (error) {
+      console.error('Error linking feedback to product area:', error)
+      return false
+    }
+
+    return true
+  }
+
+  // Link feedback to feature (many-to-many)
+  async addFeature(
+    feedbackId: string, 
+    featureId: string, 
+    confidence: number = 1.0,
+    taggedBy: 'ai' | 'manual' = 'ai'
+  ): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('feedback_features')
+      .insert({
+        feedback_id: feedbackId,
+        feature_id: featureId,
+        confidence_score: confidence,
+        tagged_by: taggedBy
+      })
+
+    if (error) {
+      console.error('Error linking feedback to feature:', error)
+      return false
+    }
+
+    return true
+  }
+
+  // Add feedback to cluster (many-to-many)
+  async addToCluster(
+    feedbackId: string,
+    clusterId: string,
+    similarityScore?: number
+  ): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('cluster_memberships')
+      .insert({
+        feedback_id: feedbackId,
+        cluster_id: clusterId,
+        similarity_score: similarityScore
+      })
+
+    if (error) {
+      console.error('Error adding feedback to cluster:', error)
+      return false
+    }
+
+    return true
+  }
+
+  // Get feedback items in a cluster
+  async getByCluster(clusterId: string): Promise<FeedbackItem[]> {
+    const { data, error } = await this.supabase
+      .from('cluster_memberships')
+      .select(`
+        feedback_id,
+        similarity_score,
+        feedback_items (*)
+      `)
+      .eq('cluster_id', clusterId)
+      .order('similarity_score', { ascending: false })
+
+    if (error) {
+      throw new Error(`Failed to get feedback by cluster: ${error.message}`)
+    }
+
+    // Extract feedback items from the joined data
+    return data?.map(item => (item as any).feedback_items).filter(Boolean) || []
+  }
 }

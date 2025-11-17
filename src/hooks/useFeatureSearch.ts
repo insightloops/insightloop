@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Feature } from '../types/database'
+import { Feature } from '../types'
 
 interface SearchFilters {
   query?: string

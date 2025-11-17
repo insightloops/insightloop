@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { FeedbackItem } from '@/types/database'
+import { FeedbackItem } from '@/types'
 
 interface FeedbackFilters {
   source?: string[]

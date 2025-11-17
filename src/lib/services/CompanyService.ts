@@ -51,8 +51,7 @@ export class CompanyService {
         slug: slug,
         industry: data.industry,
         size: data.size,
-        userId: data.userId,
-        createdByUserId: data.createdByUserId
+        userId: data.userId
       });
     } catch (error) {
       throw new Error(`Failed to create company: ${error instanceof Error ? error.message : 'Unknown error'}`);

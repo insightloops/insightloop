@@ -21,15 +21,35 @@ export interface PromptMessage {
   content: string;
 }
 
+// Tool definition interface
+export interface ToolFunction {
+  name: string;
+  description: string;
+  parameters: {
+    type: 'object';
+    properties: Record<string, any>;
+    required?: string[];
+  };
+}
+
+export interface Tool {
+  type: 'function';
+  function: ToolFunction;
+}
+
+export type ToolChoice = string | 'auto' | 'none';
+
 // Prompt configuration interface
 export interface PromptConfig {
   messages: PromptMessage[];
+  tools?: Tool[];
+  tool_choice?: ToolChoice;
 }
 
 // Chat client interface
 export interface ChatClient {
-  invoke(messages: PromptMessage[]): Promise<string>;
-  stream(messages: PromptMessage[]): AsyncIterable<string>;
+  invoke(messages: PromptMessage[], tools?: Tool[], toolChoice?: ToolChoice): Promise<string>;
+  stream(messages: PromptMessage[], tools?: Tool[], toolChoice?: ToolChoice): AsyncIterable<string>;
 }
 
 // Factory function to create appropriate chat client
@@ -38,9 +58,11 @@ function createChatClient(config: ModelConfig): ChatClient {
 
   if (config.provider === 'ollama') {
     client = new ChatOllama({
+      think: false,
       model: config.model,
       baseUrl: config.baseUrl ?? 'http://localhost:11434',
       temperature: config.temperature ?? 0.7,
+      numCtx: 32768, // Set context window to 32K (model supports 131K)
       ...(config.maxTokens && { maxTokens: config.maxTokens }),
       ...(config.topP && { topP: config.topP }),
     });
@@ -59,13 +81,41 @@ function createChatClient(config: ModelConfig): ChatClient {
   }
 
   return {
-    async invoke(messages: PromptMessage[]): Promise<string> {
+    async invoke(messages: PromptMessage[], tools?: Tool[], toolChoice?: ToolChoice | 'auto' | 'none'): Promise<string> {
       const langchainMessages = convertToLangChainMessages(messages);
+      
+      // For OpenAI, use function calling if tools are provided
+      if (config.provider === 'openai' && tools && tools.length > 0) {
+        const openAIClient = client as ChatOpenAI;
+        const langchainTools = tools.map(tool => ({
+          type: 'function' as const,
+          function: {
+            name: tool.function.name,
+            description: tool.function.description,
+            parameters: tool.function.parameters
+          }
+        }));
+        
+        const response = await openAIClient.invoke(langchainMessages, {
+          tools: langchainTools,
+          tool_choice: toolChoice ?? 'auto'
+        });
+        
+        // If the response contains tool calls, extract the structured data
+        if (response.tool_calls && response.tool_calls.length > 0) {
+          const toolCall = response.tool_calls[0];
+          return JSON.stringify(toolCall.args);
+        }
+        
+        return response.content as string;
+      }
+      
+      // For Ollama or when no tools, use standard invocation
       const response = await client.invoke(langchainMessages);
       return response.content as string;
     },
 
-    async* stream(messages: PromptMessage[]): AsyncIterable<string> {
+    async* stream(messages: PromptMessage[], tools?: Tool[], toolChoice?: ToolChoice): AsyncIterable<string> {
       const langchainMessages = convertToLangChainMessages(messages);
       const stream = await client.stream(langchainMessages);
       
@@ -131,7 +181,11 @@ export class ChatWrapper {
       { role: 'user' as const, content: message }
     ];
 
-    const response = await this.client.invoke(messages);
+    const response = await this.client.invoke(
+      messages, 
+      this.promptConfig.tools, 
+      this.promptConfig.tool_choice
+    );
     
     // Add the conversation to history
     this.addMessage({ role: 'user', content: message });

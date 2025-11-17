@@ -18,8 +18,8 @@ export default function ProductAreaPage() {
   const areaId = params.areaId as string;
   
   const { company, loading: companyLoading } = useCompany(companyId);
-  const { product, loading: productLoading } = useProduct(productId);
-  const { productArea, loading: areaLoading, error: areaError } = useProductArea(areaId);
+  const { product, loading: productLoading } = useProduct(productId, companyId);
+  const { productArea, loading: areaLoading, error: areaError } = useProductArea(areaId, companyId, productId);
 
   const loading = companyLoading || productLoading || areaLoading;
 

@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:generate-types": "supabase gen types typescript --local > src/types/database-generated.ts",
+    "test:enrichment": "tsx src/lib/services/manual-test-enrichment.ts",
+    "test:enrichment-e2e": "tsx src/lib/services/test-feedback-enrichment-e2e.ts",
+    "test:enrichment-small": "tsx src/lib/services/small-test.ts",
+    "test:clustering": "tsx src/lib/services/semantic-clustering-test.ts",
+    "db:generate-types": "supabase gen types typescript --local > src/types/database.ts",
     "db:reset": "supabase db reset",
     "db:start": "supabase start",
     "db:stop": "supabase stop"
@@ -28,6 +32,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@supabase/supabase-js": "^2.78.0",
     "@tailwindcss/typography": "^0.5.19",
+    "@types/uuid": "^10.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.552.0",
@@ -49,6 +54,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.0.0",
     "tailwindcss": "^4",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "tsx": "^4.20.6"
   }
 }

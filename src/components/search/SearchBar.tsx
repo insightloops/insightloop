@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Search, Filter, X } from 'lucide-react'
-import { FeatureStatus, FeaturePriority } from '@/types/database'
+import { FeatureStatus, FeaturePriority } from '@/types'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Badge } from '../ui/badge'

@@ -1,6 +1,6 @@
 import { supabase } from '../supabase'
 import { BaseRepository } from './BaseRepository'
-import { Feature, FeatureInsert, FeatureUpdate, FeatureWithInsights } from '../../types/database'
+import { Feature, FeatureInsert, FeatureUpdate, FeatureWithInsights } from '../../types'
 
 export class FeatureRepository extends BaseRepository {
   private readonly tableName = 'features'
@@ -256,9 +256,7 @@ export class FeatureRepository extends BaseRepository {
     try {
       const insertData: FeatureInsert = {
         ...featureData,
-        user_id: featureData.userId,
-        created_by_user_id: featureData.createdByUserId || featureData.userId,
-        assigned_to_user_id: featureData.assignedToUserId
+        user_id: featureData.createdByUserId || featureData.userId
       }
 
       const { data, error } = await supabase
@@ -374,7 +372,7 @@ export class FeatureRepository extends BaseRepository {
         throw new Error('Feature not found')
       }
 
-      if (feature.user_id !== currentUserId && feature.created_by_user_id !== currentUserId) {
+      if (feature.user_id !== currentUserId) {
         throw new Error('Insufficient permissions to assign feature')
       }
 
@@ -403,7 +401,7 @@ export class FeatureRepository extends BaseRepository {
         throw new Error('Feature not found')
       }
 
-      if (feature.user_id !== userId && feature.created_by_user_id !== userId && feature.assigned_to_user_id !== userId) {
+      if (feature.user_id !== userId) {
         throw new Error('Insufficient permissions to update feature')
       }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Company } from '@/types/database'
+import { Company } from '@/types'
 
 interface CreateCompanyData {
   name: string;

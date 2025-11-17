@@ -109,10 +109,11 @@ interface UseProductResult {
   refetch: () => Promise<void>
 }
 
-export function useProduct(productId: string): UseProductResult {
+export function useProduct(productId: string, companyId?: string): UseProductResult {
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const userId = useUserIdSync()
 
   const fetchProduct = async () => {
     if (!productId) return
@@ -121,7 +122,17 @@ export function useProduct(productId: string): UseProductResult {
       setLoading(true)
       setError(null)
       
-      const response = await fetch(`/api/products/${productId}`)
+      // Use company-nested route if companyId is provided, otherwise fallback to direct route
+      const apiUrl = companyId 
+        ? `/api/companies/${companyId}/products/${productId}`
+        : `/api/products/${productId}`
+      
+      const response = await fetch(apiUrl, {
+        headers: {
+          'x-user-id': userId,
+          'Content-Type': 'application/json'
+        }
+      })
       
       if (!response.ok) {
         throw new Error(`Failed to fetch product: ${response.statusText}`)

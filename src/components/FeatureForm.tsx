@@ -6,7 +6,7 @@ import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { Textarea } from './ui/textarea'
 import { Select } from './ui/select'
-import { FeatureInsert, FeatureUpdate, FeatureStatus, FeaturePriority, ProductArea } from '@/types/database'
+import { FeatureInsert, FeatureUpdate, FeatureStatus, FeaturePriority, ProductArea } from '@/types'
 
 interface FeatureFormProps {
   initialData?: Partial<FeatureUpdate>
@@ -22,7 +22,6 @@ const statusOptions = [
   { value: FeatureStatus.PLANNED, label: 'Planned' },
   { value: FeatureStatus.IN_PROGRESS, label: 'In Progress' },
   { value: FeatureStatus.COMPLETED, label: 'Completed' },
-  { value: FeatureStatus.ON_HOLD, label: 'On Hold' },
   { value: FeatureStatus.CANCELLED, label: 'Cancelled' }
 ]
 

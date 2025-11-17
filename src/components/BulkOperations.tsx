@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { CheckSquare, Square, Trash2, Edit3, ArrowUp, ArrowDown } from 'lucide-react'
-import { Feature, FeatureStatus, FeaturePriority } from '../types/database'
+import { Feature, FeatureStatus, FeaturePriority } from '../types'
 import { Button } from './ui/button'
 import { Select } from './ui/select'
 import { Dialog } from './ui/dialog'

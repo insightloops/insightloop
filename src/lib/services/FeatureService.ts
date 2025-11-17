@@ -1,5 +1,5 @@
 import { FeatureRepository } from '../repositories/FeatureRepository'
-import { Feature, FeatureInsert, FeatureUpdate, FeatureWithInsights, FeatureStatus, FeaturePriority } from '../../types/database'
+import { Feature, FeatureInsert, FeatureUpdate, FeatureWithInsights, FeatureStatus, FeaturePriority } from '../../types'
 
 export class FeatureService {
   private featureRepository: FeatureRepository
@@ -255,7 +255,6 @@ export class FeatureService {
     planned: Feature[]
     in_progress: Feature[]
     completed: Feature[]
-    on_hold: Feature[]
     cancelled: Feature[]
   }> {
     const features = await this.getFeatures(companyId)
@@ -272,7 +271,6 @@ export class FeatureService {
         const bDate = new Date(b.updated_at || b.created_at || 0).getTime()
         return bDate - aDate
       }),
-      on_hold: features.filter(f => f.status === FeatureStatus.ON_HOLD),
       cancelled: features.filter(f => f.status === FeatureStatus.CANCELLED)
     }
   }

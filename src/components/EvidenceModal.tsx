@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useInsightWithEvidence } from '@/hooks'
-import { Insight, FeedbackItem } from '@/types/database'
+import { Insight, FeedbackItem } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -80,16 +80,20 @@ function FeedbackCard({ feedback }: { feedback: FeedbackItem }) {
               : 'Date not available'
             }
           </span>
-          {feedback.user_metadata && Object.keys(feedback.user_metadata).length > 0 && (
+          {feedback.user_metadata && 
+           typeof feedback.user_metadata === 'object' && 
+           feedback.user_metadata !== null && 
+           !Array.isArray(feedback.user_metadata) && 
+           Object.keys(feedback.user_metadata).length > 0 && (
             <div className="flex items-center space-x-2">
-              {feedback.user_metadata.user_type && (
+              {'user_type' in feedback.user_metadata && feedback.user_metadata.user_type && (
                 <span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-xs">
-                  {feedback.user_metadata.user_type}
+                  {String(feedback.user_metadata.user_type)}
                 </span>
               )}
-              {feedback.user_metadata.plan && (
+              {'plan' in feedback.user_metadata && feedback.user_metadata.plan && (
                 <span className="px-2 py-0.5 bg-secondary text-secondary-foreground rounded text-xs">
-                  {feedback.user_metadata.plan}
+                  {String(feedback.user_metadata.plan)}
                 </span>
               )}
             </div>
@@ -125,9 +129,11 @@ export function EvidenceModal({ isOpen, onClose, insight, companyId }: EvidenceM
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary">
               {insight.theme}
             </span>
-            <div className={`text-sm font-medium ${getScoreColor(insight.insight_score)}`}>
-              {Math.round(insight.insight_score * 100)}% Insight Score
-            </div>
+            {insight.insight_score !== null && (
+              <div className={`text-sm font-medium ${getScoreColor(insight.insight_score)}`}>
+                {Math.round(insight.insight_score * 100)}% Insight Score
+              </div>
+            )}
           </div>
         </DialogHeader>
 
@@ -144,26 +150,26 @@ export function EvidenceModal({ isOpen, onClose, insight, companyId }: EvidenceM
             <CardContent className="p-4">
               <div className="grid grid-cols-4 gap-4">
                 <div className="text-center">
-                  <div className={`text-2xl font-bold ${getScoreColor(insight.insight_score)}`}>
-                    {Math.round(insight.insight_score * 100)}%
+                  <div className={`text-2xl font-bold ${insight.insight_score !== null ? getScoreColor(insight.insight_score) : 'text-muted-foreground'}`}>
+                    {insight.insight_score !== null ? Math.round(insight.insight_score * 100) : '--'}%
                   </div>
                   <div className="text-sm text-muted-foreground">Insight Score</div>
                 </div>
                 <div className="text-center">
-                  <div className={`text-2xl font-bold ${getScoreColor(insight.urgency_score)}`}>
-                    {Math.round(insight.urgency_score * 100)}%
+                  <div className={`text-2xl font-bold ${insight.urgency_score !== null ? getScoreColor(insight.urgency_score) : 'text-muted-foreground'}`}>
+                    {insight.urgency_score !== null ? Math.round(insight.urgency_score * 100) : '--'}%
                   </div>
                   <div className="text-sm text-muted-foreground">Urgency</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">
-                    {Math.round(insight.volume_score * 100)}%
+                    {insight.volume_score !== null ? Math.round(insight.volume_score * 100) : '--'}%
                   </div>
                   <div className="text-sm text-muted-foreground">Volume</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-secondary-foreground">
-                    {Math.round(insight.value_alignment_score * 100)}%
+                    {insight.value_alignment_score !== null ? Math.round(insight.value_alignment_score * 100) : '--'}%
                   </div>
                   <div className="text-sm text-muted-foreground">Alignment</div>
                 </div>
@@ -172,28 +178,32 @@ export function EvidenceModal({ isOpen, onClose, insight, companyId }: EvidenceM
           </Card>
 
           {/* Segment Context */}
-          {insight.segment_context && Object.keys(insight.segment_context).length > 0 && (
+          {insight.segment_context && 
+           typeof insight.segment_context === 'object' && 
+           insight.segment_context !== null && 
+           !Array.isArray(insight.segment_context) && 
+           Object.keys(insight.segment_context).length > 0 && (
             <div>
               <h3 className="text-lg font-medium mb-3">Segment Context</h3>
               <Card className="border-primary bg-primary/5">
                 <CardContent className="p-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    {insight.segment_context.primary_segment && (
+                    {'primary_segment' in insight.segment_context && insight.segment_context.primary_segment && (
                       <div>
                         <span className="font-medium text-primary">Primary Segment:</span>
-                        <div className="text-primary/80">{insight.segment_context.primary_segment}</div>
+                        <div className="text-primary/80">{String(insight.segment_context.primary_segment)}</div>
                       </div>
                     )}
-                    {insight.segment_context.plans && (
+                    {'plans' in insight.segment_context && insight.segment_context.plans && Array.isArray(insight.segment_context.plans) && (
                       <div>
                         <span className="font-medium text-primary">Plans:</span>
-                        <div className="text-primary/80">{insight.segment_context.plans.join(', ')}</div>
+                        <div className="text-primary/80">{insight.segment_context.plans.map(String).join(', ')}</div>
                       </div>
                     )}
-                    {insight.segment_context.company_sizes && (
+                    {'company_sizes' in insight.segment_context && insight.segment_context.company_sizes && Array.isArray(insight.segment_context.company_sizes) && (
                       <div>
                         <span className="font-medium text-primary">Company Sizes:</span>
-                        <div className="text-primary/80">{insight.segment_context.company_sizes.join(', ')}</div>
+                        <div className="text-primary/80">{insight.segment_context.company_sizes.map(String).join(', ')}</div>
                       </div>
                     )}
                   </div>
@@ -206,9 +216,9 @@ export function EvidenceModal({ isOpen, onClose, insight, companyId }: EvidenceM
           <div>
             <h3 className="text-lg font-medium mb-4">
               Supporting Evidence
-              {insightWithEvidence?.feedback_items && (
+              {insightWithEvidence?.feedbackItems && (
                 <span className="text-sm font-normal text-muted-foreground ml-2">
-                  ({insightWithEvidence.feedback_items.length} feedback items)
+                  ({insightWithEvidence.feedbackItems.length} feedback items)
                 </span>
               )}
             </h3>
@@ -237,15 +247,15 @@ export function EvidenceModal({ isOpen, onClose, insight, companyId }: EvidenceM
               </Card>
             )}
 
-            {insightWithEvidence?.feedback_items && insightWithEvidence.feedback_items.length > 0 && (
+            {insightWithEvidence?.feedbackItems && insightWithEvidence.feedbackItems.length > 0 && (
               <div className="space-y-4">
-                {insightWithEvidence.feedback_items.map((feedback: FeedbackItem) => (
+                {insightWithEvidence.feedbackItems.map((feedback: FeedbackItem) => (
                   <FeedbackCard key={feedback.id} feedback={feedback} />
                 ))}
               </div>
             )}
 
-            {insightWithEvidence && (!insightWithEvidence.feedback_items || insightWithEvidence.feedback_items.length === 0) && !loading && (
+            {insightWithEvidence && (!insightWithEvidence.feedbackItems || insightWithEvidence.feedbackItems.length === 0) && !loading && (
               <Card>
                 <CardContent className="text-center py-8">
                   <div className="mx-auto w-12 h-12 text-muted-foreground mb-4">

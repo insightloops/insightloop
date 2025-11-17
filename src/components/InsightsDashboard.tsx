@@ -2,103 +2,26 @@
 
 import { useState, useMemo } from 'react'
 import { useInsights } from '@/hooks'
-import { Insight } from '@/types/database'
+import { Insight } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { InsightCard, InsightCardData } from '@/components/ui/insight-card'
 
-interface InsightCardProps {
-  insight: Insight
-  onClick: (insight: Insight) => void
-}
-
-function InsightCard({ insight, onClick }: InsightCardProps) {
-  const getScoreColor = (score: number) => {
-    if (score >= 0.8) return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/20'
-    if (score >= 0.6) return 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-900/20'
-    return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/20'
-  }
-
-  const getUrgencyColor = (score: number) => {
-    if (score >= 0.8) return 'text-destructive'
-    if (score >= 0.6) return 'text-yellow-600 dark:text-yellow-400'
-    return 'text-green-600 dark:text-green-400'
-  }
-
-  return (
-    <Card 
-      className="hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => onClick(insight)}
-    >
-      <CardHeader className="space-y-4">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg mb-2">
-              {insight.title}
-            </CardTitle>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-              {insight.theme}
-            </span>
-          </div>
-          <div className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${getScoreColor(insight.insight_score)}`}>
-            <span className="w-2 h-2 bg-current rounded-full mr-1"></span>
-            {Math.round(insight.insight_score * 100)}%
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent>
-        {/* Summary */}
-        <CardDescription className="line-clamp-3">
-          {insight.summary}
-        </CardDescription>
-
-        {/* Scores */}
-        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
-          <div className="text-center">
-            <div className={`text-lg font-semibold ${getUrgencyColor(insight.urgency_score)}`}>
-              {Math.round(insight.urgency_score * 100)}%
-            </div>
-            <div className="text-xs text-gray-500">Urgency</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-semibold text-blue-600">
-              {Math.round(insight.volume_score * 100)}%
-            </div>
-            <div className="text-xs text-gray-500">Volume</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-semibold text-purple-600">
-              {Math.round(insight.value_alignment_score * 100)}%
-            </div>
-            <div className="text-xs text-gray-500">Alignment</div>
-          </div>
-        </div>
-
-        {/* Metadata */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground mt-4">
-          <span>
-            {insight.status === 'active' && (
-              <span className="text-green-600 dark:text-green-400">● Active</span>
-            )}
-            {insight.status === 'archived' && (
-              <span className="text-muted-foreground">● Archived</span>
-            )}
-            {insight.status === 'implemented' && (
-              <span className="text-primary">● Implemented</span>
-            )}
-          </span>
-          <span>
-            {new Date(insight.created_at).toLocaleDateString()}
-          </span>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+// Utility function to convert database Insight to InsightCardData
+const convertInsightToCardData = (insight: Insight): InsightCardData => ({
+  id: insight.id,
+  title: insight.title,
+  summary: insight.summary,
+  theme: insight.theme ?? undefined,
+  status: insight.status as 'active' | 'archived' | 'implemented' | undefined,
+  created_at: insight.created_at ?? undefined,
+  insight_score: insight.insight_score,
+  urgency_score: insight.urgency_score,
+  volume_score: insight.volume_score,
+  value_alignment_score: insight.value_alignment_score
+})
 
 interface InsightsDashboardProps {
   companyId: string
@@ -331,8 +254,12 @@ export function InsightsDashboard({ companyId, onInsightClick }: InsightsDashboa
           {sortedInsights.map(insight => (
             <InsightCard
               key={insight.id}
-              insight={insight}
-              onClick={onInsightClick}
+              insight={convertInsightToCardData(insight)}
+              variant="dashboard"
+              showActions={false}
+              showMetrics={true}
+              expandable={false}
+              onClick={() => onInsightClick(insight)}
             />
           ))}
         </div>

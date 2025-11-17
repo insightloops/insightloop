@@ -25,8 +25,8 @@ export default function ProductAreasPage() {
   const companyId = params.companyId as string;
   const productId = params.productId as string;
   
-  const { product, loading: productLoading, error: productError } = useProduct(productId);
-  const { productAreas, loading: areasLoading, error: areasError, createProductArea } = useProductAreas(productId, true);
+  const { product, loading: productLoading, error: productError } = useProduct(productId, companyId);
+  const { productAreas, loading: areasLoading, error: areasError, createProductArea } = useProductAreas(productId, true, companyId);
   
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedParentId, setSelectedParentId] = useState<string | undefined>(undefined);
@@ -123,6 +123,7 @@ export default function ProductAreasPage() {
       <ProductAreaList 
         productAreas={productAreas} 
         productName={product.name}
+        companyId={companyId}
         onCreateNew={handleCreateNew}
       />
 

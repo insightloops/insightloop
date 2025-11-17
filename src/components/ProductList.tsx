@@ -18,6 +18,7 @@ interface Product {
 interface ProductListProps {
   products: Product[];
   companyName?: string;
+  companyId?: string;
   onCreateNew: () => void;
   showCompanyInfo?: boolean;
 }
@@ -25,6 +26,7 @@ interface ProductListProps {
 export function ProductList({ 
   products, 
   companyName, 
+  companyId,
   onCreateNew, 
   showCompanyInfo = false 
 }: ProductListProps) {
@@ -120,12 +122,12 @@ export function ProductList({
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Link href={`/products/${product.id}/areas`}>
+                      <Link href={companyId ? `/companies/${companyId}/products/${product.id}/areas` : `/products/${product.id}/areas`}>
                         <Button variant="outline" size="sm">
                           Areas
                         </Button>
                       </Link>
-                      <Link href={`/products/${product.id}`}>
+                      <Link href={companyId ? `/companies/${companyId}/products/${product.id}` : `/products/${product.id}`}>
                         <Button variant="outline" size="sm">
                           View
                         </Button>
