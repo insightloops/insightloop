@@ -1,0 +1,15 @@
+Feature ID,Feature Name,Product Area ID,Description
+F001,Playlist Discovery,PA001,AI-powered personalized playlist recommendations based on listening history
+F002,Mood Playlists,PA001,Curated playlists for different moods and activities
+F003,Music Library,PA001,Catalog of songs including international and local artists
+F004,Recommendation Engine,PA001,Algorithm that suggests new songs and artists to users
+F005,Mobile App,PA002,Native mobile application for iOS and Android
+F006,App Performance,PA002,App loading speed and responsiveness during usage
+F007,Search,PA003,"Search functionality for finding songs, artists, and playlists"
+F008,Social Features,PA003,Share tracks and playlists with friends on social media
+F009,Offline Mode,PA003,Download songs for offline listening during commute
+F010,Lyrics Display,PA003,Real-time lyrics display during song playback
+F011,UI Theme,PA003,Dark mode and other visual customization options
+F012,Collaborative Playlists,PA003,Create and edit playlists together with friends
+F013,Customer Support,PA004,Help center and support team for billing and technical issues
+F014,Pricing Plans,PA004,Subscription tiers and free tier with ads
