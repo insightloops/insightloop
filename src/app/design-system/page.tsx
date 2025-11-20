@@ -33,21 +33,27 @@ export default function ThemeShowcase() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen p-8">
+      <div className="max-w-7xl mx-auto space-y-12">
         
         {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="flex items-center justify-center gap-4">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              InsightLoop Design System
+        <div className="text-center space-y-6">
+          <div className="flex items-center justify-center gap-6">
+            <h1 className="text-5xl font-bold vortex-gradient-text">
+              InsightLoop Vortex Design System
             </h1>
             <ThemeToggle />
           </div>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Beautiful, modern button components designed for AI-powered analytics platforms. 
-            Optimized for both light and dark themes with glassmorphism and gradient effects.
+          <p className="text-muted-foreground text-xl max-w-3xl mx-auto">
+            Professional, clean interface components for modern AI-powered product intelligence. 
+            Built with precision, accessibility, and performance in mind.
           </p>
+          <div className="border border-primary/20 rounded-xl p-4 max-w-lg mx-auto bg-primary/5">
+            <p className="text-primary font-semibold flex items-center justify-center gap-2">
+              <Zap className="w-5 h-5" />
+              <span className="vortex-accent">Vortex</span> Design System
+            </p>
+          </div>
         </div>
 
         {/* Color Palette */}
@@ -61,45 +67,142 @@ export default function ThemeShowcase() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               <div className="space-y-2">
-                <div className="w-full h-20 rounded-lg bg-gradient-to-br from-primary to-primary/80 border border-border"></div>
+                <div 
+                  className="w-full h-20 rounded-lg border border-border shadow-sm"
+                  style={{background: 'hsl(199 89% 48%)'}}
+                ></div>
                 <div className="text-center">
                   <p className="font-medium">Primary</p>
-                  <p className="text-xs text-muted-foreground">AI Blue</p>
+                  <p className="text-xs text-muted-foreground">Electric Cerulean</p>
+                  <p className="text-xs text-muted-foreground font-mono">#1a8cdf</p>
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="w-full h-20 rounded-lg bg-gradient-to-br from-accent to-accent/80 border border-border"></div>
+                <div 
+                  className="w-full h-20 rounded-lg border border-border shadow-sm"
+                  style={{background: 'hsl(258 90% 66%)'}}
+                ></div>
+                <div className="text-center">
+                  <p className="font-medium">Secondary</p>
+                  <p className="text-xs text-muted-foreground">Electric Violet</p>
+                  <p className="text-xs text-muted-foreground font-mono">#8b5cf6</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div 
+                  className="w-full h-20 rounded-lg border border-border shadow-sm"
+                  style={{background: 'hsl(142 76% 36%)'}}
+                ></div>
                 <div className="text-center">
                   <p className="font-medium">Accent</p>
-                  <p className="text-xs text-muted-foreground">Analytics Teal</p>
+                  <p className="text-xs text-muted-foreground">Neon Emerald</p>
+                  <p className="text-xs text-muted-foreground font-mono">#059669</p>
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="w-full h-20 rounded-lg bg-gradient-to-br from-success to-success/80 border border-border"></div>
-                <div className="text-center">
-                  <p className="font-medium">Success</p>
-                  <p className="text-xs text-muted-foreground">Insight Green</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="w-full h-20 rounded-lg bg-gradient-to-br from-warning to-warning/80 border border-border"></div>
+                <div 
+                  className="w-full h-20 rounded-lg border border-border shadow-sm"
+                  style={{background: 'hsl(38 92% 50%)'}}
+                ></div>
                 <div className="text-center">
                   <p className="font-medium">Warning</p>
-                  <p className="text-xs text-muted-foreground">Alert Orange</p>
+                  <p className="text-xs text-muted-foreground">Amber Alert</p>
+                  <p className="text-xs text-muted-foreground font-mono">#f59e0b</p>
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="w-full h-20 rounded-lg bg-gradient-to-br from-info to-info/80 border border-border"></div>
+                <div 
+                  className="w-full h-20 rounded-lg border border-border shadow-sm"
+                  style={{background: 'hsl(199 89% 48%)'}}
+                ></div>
                 <div className="text-center">
                   <p className="font-medium">Info</p>
-                  <p className="text-xs text-muted-foreground">Data Blue</p>
+                  <p className="text-xs text-muted-foreground">Info Blue</p>
+                  <p className="text-xs text-muted-foreground font-mono">#1a8cdf</p>
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="w-full h-20 rounded-lg bg-gradient-to-br from-destructive to-destructive/80 border border-border"></div>
+                <div 
+                  className="w-full h-20 rounded-lg border border-border shadow-sm"
+                  style={{background: 'hsl(0 84% 60%)'}}
+                ></div>
                 <div className="text-center">
                   <p className="font-medium">Error</p>
-                  <p className="text-xs text-muted-foreground">Alert Red</p>
+                  <p className="text-xs text-muted-foreground">Bright Red</p>
+                  <p className="text-xs text-muted-foreground font-mono">#ef4444</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Dark Mode Colors */}
+            <div className="mt-8">
+              <h4 className="font-semibold mb-4">Dark Mode Palette</h4>
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                <div className="space-y-2">
+                  <div 
+                    className="w-full h-20 rounded-lg border border-gray-700 shadow-sm"
+                    style={{background: 'hsl(199 89% 68%)'}}
+                  ></div>
+                  <div className="text-center">
+                    <p className="font-medium">Primary Dark</p>
+                    <p className="text-xs text-muted-foreground">Bright Cerulean</p>
+                    <p className="text-xs text-muted-foreground font-mono">#3b9eff</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div 
+                    className="w-full h-20 rounded-lg border border-gray-700 shadow-sm"
+                    style={{background: 'hsl(258 90% 76%)'}}
+                  ></div>
+                  <div className="text-center">
+                    <p className="font-medium">Secondary Dark</p>
+                    <p className="text-xs text-muted-foreground">Bright Violet</p>
+                    <p className="text-xs text-muted-foreground font-mono">#a855f7</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div 
+                    className="w-full h-20 rounded-lg border border-gray-700 shadow-sm"
+                    style={{background: 'hsl(142 76% 56%)'}}
+                  ></div>
+                  <div className="text-center">
+                    <p className="font-medium">Accent Dark</p>
+                    <p className="text-xs text-muted-foreground">Bright Emerald</p>
+                    <p className="text-xs text-muted-foreground font-mono">#10b981</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div 
+                    className="w-full h-20 rounded-lg border border-gray-700 shadow-sm"
+                    style={{background: 'hsl(38 92% 70%)'}}
+                  ></div>
+                  <div className="text-center">
+                    <p className="font-medium">Warning Dark</p>
+                    <p className="text-xs text-muted-foreground">Bright Amber</p>
+                    <p className="text-xs text-muted-foreground font-mono">#fbbf24</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div 
+                    className="w-full h-20 rounded-lg border border-gray-700 shadow-sm"
+                    style={{background: 'hsl(199 89% 68%)'}}
+                  ></div>
+                  <div className="text-center">
+                    <p className="font-medium">Info Dark</p>
+                    <p className="text-xs text-muted-foreground">Bright Cerulean</p>
+                    <p className="text-xs text-muted-foreground font-mono">#3b9eff</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div 
+                    className="w-full h-20 rounded-lg border border-gray-700 shadow-sm"
+                    style={{background: 'hsl(0 92% 72%)'}}
+                  ></div>
+                  <div className="text-center">
+                    <p className="font-medium">Error Dark</p>
+                    <p className="text-xs text-muted-foreground">Neon Red</p>
+                    <p className="text-xs text-muted-foreground font-mono">#f87171</p>
+                  </div>
                 </div>
               </div>
             </div>

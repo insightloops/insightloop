@@ -14,7 +14,9 @@
     "db:generate-types": "supabase gen types typescript --local > src/types/database.ts",
     "db:reset": "supabase db reset",
     "db:start": "supabase start",
-    "db:stop": "supabase stop"
+    "db:stop": "supabase stop",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@langchain/core": "^1.0.2",
@@ -47,14 +49,25 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^4.1.3",
+    "@storybook/addon-a11y": "^10.0.8",
+    "@storybook/addon-docs": "^10.0.8",
+    "@storybook/addon-vitest": "^10.0.8",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.0",
+    "eslint-plugin-storybook": "^10.0.8",
+    "storybook": "^10.0.8",
     "tailwindcss": "^4",
+    "tsx": "^4.20.6",
     "typescript": "5.9.3",
-    "tsx": "^4.20.6"
+    "@storybook/nextjs-vite": "^10.0.8",
+    "vitest": "^4.0.10",
+    "playwright": "^1.56.1",
+    "@vitest/browser-playwright": "^4.0.10",
+    "@vitest/coverage-v8": "^4.0.10"
   }
 }

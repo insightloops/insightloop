@@ -4,43 +4,92 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-95',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-95 relative overflow-hidden group cursor-pointer',
   {
     variants: {
       variant: {
-        // Primary InsightLoop Brand Button
-        default: 'bg-gradient-to-r from-primary via-primary to-accent text-primary-foreground hover:from-primary/90 hover:via-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl hover:shadow-primary/25 transform hover:scale-[1.02] backdrop-blur-sm border border-primary/20',
+        // Primary Vortex Button - Electric Cerulean
+        default: `bg-[hsl(199_89%_48%)] text-white 
+                 hover:bg-[hsl(199_89%_42%)] 
+                 shadow-lg hover:shadow-xl hover:shadow-[hsl(199_89%_48%)]/25 
+                 border border-[hsl(199_89%_48%)]/20 backdrop-blur-sm
+                 transform hover:scale-[1.02] transition-all duration-200
+                 font-semibold text-sm
+                 dark:bg-[hsl(199_89%_68%)] dark:hover:bg-[hsl(199_89%_72%)]
+                 dark:text-[hsl(222_84%_4.9%)] dark:shadow-[hsl(199_89%_68%)]/25
+                 before:absolute before:inset-0 before:bg-gradient-to-r 
+                 before:from-transparent before:via-white/10 before:to-transparent 
+                 before:translate-x-[-100%] hover:before:translate-x-[100%] 
+                 before:transition-transform before:duration-500`,
         
-        // Secondary Professional Button
-        secondary: 'bg-gradient-to-r from-secondary to-secondary/95 text-secondary-foreground hover:from-secondary-hover hover:to-secondary-hover/95 shadow-md hover:shadow-lg border border-border/50 backdrop-blur-sm',
+        // Secondary Vortex Button - Electric Violet
+        secondary: `bg-[hsl(258_90%_66%)] text-white 
+                   hover:bg-[hsl(258_90%_60%)] 
+                   shadow-md hover:shadow-lg hover:shadow-[hsl(258_90%_66%)]/20
+                   border border-[hsl(258_90%_66%)]/20 backdrop-blur-sm 
+                   transform hover:scale-[1.02] transition-all duration-200
+                   font-semibold text-sm
+                   dark:bg-[hsl(258_90%_76%)] dark:hover:bg-[hsl(258_90%_80%)]
+                   dark:text-[hsl(222_84%_4.9%)] dark:shadow-[hsl(258_90%_76%)]/20`,
         
-        // Outline Glass Morphism Button
-        outline: 'border-2 border-primary/30 bg-background/80 backdrop-blur-md hover:bg-primary/5 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transform hover:scale-[1.01]',
+        // Outline Vortex Button - Clean Outline
+        outline: `border-2 border-[hsl(199_89%_48%)] bg-transparent text-[hsl(199_89%_48%)]
+                 hover:bg-[hsl(199_89%_48%)] hover:text-white 
+                 shadow-sm hover:shadow-md 
+                 transform hover:scale-[1.02] transition-all duration-200
+                 font-semibold text-sm
+                 dark:border-[hsl(199_89%_68%)] dark:text-[hsl(199_89%_68%)]
+                 dark:hover:bg-[hsl(199_89%_68%)] dark:hover:text-[hsl(222_84%_4.9%)]`,
         
-        // Ghost Subtle Button
-        ghost: 'hover:bg-accent/10 hover:text-accent-foreground backdrop-blur-sm hover:shadow-md transform hover:scale-[1.01]',
+        // Ghost Vortex Button - Subtle Hover
+        ghost: `hover:bg-accent/10 hover:text-accent-foreground 
+               transition-all duration-200 font-semibold text-sm`,
         
         // Link Style Button
         link: 'text-primary underline-offset-4 hover:underline hover:text-primary/80 transition-colors',
         
-        // AI Special Effect Button
-        ai: `bg-gradient-to-r from-insight-primary via-insight-tertiary to-insight-secondary text-primary-foreground 
-             hover:shadow-2xl hover:shadow-insight-primary/25 hover:from-insight-primary/90 hover:via-insight-tertiary/90 hover:to-insight-secondary/90
-             transform hover:scale-[1.03] border border-insight-primary/30 backdrop-blur-sm
-             relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent 
-             before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700`,
+        // AI Enhanced Button - Subtle Premium Feel
+        ai: `bg-gradient-to-r from-[hsl(199_89%_48%)] to-[hsl(199_89%_52%)] text-white
+             hover:from-[hsl(199_89%_45%)] hover:to-[hsl(199_89%_49%)]
+             shadow-lg hover:shadow-xl hover:shadow-[hsl(199_89%_48%)]/20 
+             border border-[hsl(199_89%_48%)]/30 backdrop-blur-sm
+             transform hover:scale-[1.02] transition-all duration-250
+             font-semibold text-sm
+             dark:from-[hsl(199_89%_68%)] dark:to-[hsl(199_89%_72%)]
+             dark:hover:from-[hsl(199_89%_65%)] dark:hover:to-[hsl(199_89%_69%)]
+             dark:text-[hsl(222_84%_4.9%)] dark:shadow-[hsl(199_89%_68%)]/20
+             relative overflow-hidden
+             before:absolute before:inset-0 before:bg-gradient-to-r 
+             before:from-transparent before:via-white/8 before:to-transparent 
+             before:translate-x-[-200%] hover:before:translate-x-[200%] 
+             before:transition-transform before:duration-800 before:ease-out`,
         
-        // Status Buttons
-        destructive: 'bg-gradient-to-r from-destructive to-destructive/90 text-destructive-foreground hover:from-destructive/90 hover:to-destructive/80 shadow-lg hover:shadow-xl hover:shadow-destructive/25 transform hover:scale-[1.02] border border-destructive/20',
+        // Status Buttons - Clean Vortex Style
+        destructive: `bg-[hsl(0_84%_60%)] text-white hover:bg-[hsl(0_84%_55%)] 
+                     shadow-md hover:shadow-lg transform hover:scale-[1.02] 
+                     transition-all duration-200 font-semibold text-sm
+                     dark:bg-[hsl(0_92%_72%)] dark:hover:bg-[hsl(0_92%_68%)] dark:text-[hsl(222_84%_4.9%)]`,
         
-        success: 'bg-gradient-to-r from-success to-success/90 text-success-foreground hover:from-success/90 hover:to-success/80 shadow-lg hover:shadow-xl hover:shadow-success/25 transform hover:scale-[1.02] border border-success/20',
+        success: `bg-[hsl(142_76%_36%)] text-white hover:bg-[hsl(142_76%_32%)] 
+                 shadow-md hover:shadow-lg transform hover:scale-[1.02] 
+                 transition-all duration-200 font-semibold text-sm
+                 dark:bg-[hsl(142_76%_56%)] dark:hover:bg-[hsl(142_76%_52%)] dark:text-[hsl(222_84%_4.9%)]`,
         
-        warning: 'bg-gradient-to-r from-warning to-warning/90 text-warning-foreground hover:from-warning/90 hover:to-warning/80 shadow-lg hover:shadow-xl hover:shadow-warning/25 transform hover:scale-[1.02] border border-warning/20',
+        warning: `bg-[hsl(38_92%_50%)] text-white hover:bg-[hsl(38_92%_45%)] 
+                 shadow-md hover:shadow-lg transform hover:scale-[1.02] 
+                 transition-all duration-200 font-semibold text-sm
+                 dark:bg-[hsl(38_92%_70%)] dark:hover:bg-[hsl(38_92%_65%)] dark:text-[hsl(222_84%_4.9%)]`,
         
-        info: 'bg-gradient-to-r from-info to-info/90 text-info-foreground hover:from-info/90 hover:to-info/80 shadow-lg hover:shadow-xl hover:shadow-info/25 transform hover:scale-[1.02] border border-info/20',
+        info: `bg-[hsl(199_89%_48%)] text-white hover:bg-[hsl(199_89%_42%)] 
+              shadow-md hover:shadow-lg transform hover:scale-[1.02] 
+              transition-all duration-200 font-semibold text-sm
+              dark:bg-[hsl(199_89%_68%)] dark:hover:bg-[hsl(199_89%_64%)] dark:text-[hsl(222_84%_4.9%)]`,
         
-        // Glassmorphism Button
-        glass: 'bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 dark:border-white/10 text-foreground hover:bg-white/20 dark:hover:bg-black/20 hover:shadow-xl transform hover:scale-[1.02]',
+        // Glass Vortex Button - Clean Glass Effect
+        glass: `bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 
+               text-foreground hover:bg-white/20 dark:hover:bg-white/10 
+               shadow-md hover:shadow-lg transform hover:scale-[1.02] 
+               transition-all duration-200 font-semibold text-sm`,
       },
       size: {
         sm: 'h-9 rounded-lg px-4 text-xs',

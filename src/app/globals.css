@@ -1,53 +1,57 @@
 @import "tailwindcss";
 
 :root {
-  /* InsightLoop AI Analytics Light Theme */
-  --background: 220 20% 98%;
-  --foreground: 220 25% 8%;
-  --card: 0 0% 100%;
-  --card-foreground: 220 25% 8%;
+  /* INSIGHTLOOP VORTEX THEME - LIGHT MODE */
+  /* Cutting-edge AI Product Intelligence Interface */
+  
+  /* Base Colors - Clean Professional Foundation */
+  --background: 0 0% 100%;           /* Pure White */
+  --foreground: 222 47% 11%;         /* Deep Navy Charcoal */
+  --card: 0 0% 100%;                 /* White Cards */
+  --card-foreground: 222 47% 11%;
   --popover: 0 0% 100%;
-  --popover-foreground: 220 25% 8%;
+  --popover-foreground: 222 47% 11%;
   
-  /* Primary: Deep AI Blue with Purple undertones */
-  --primary: 225 73% 57%;
+  /* Primary Brand - Vortex Blue (Electric Cerulean) */
+  --primary: 199 89% 48%;            /* Electric Cerulean Blue */
   --primary-foreground: 0 0% 100%;
-  --primary-hover: 225 73% 52%;
+  --primary-hover: 199 89% 42%;
   
-  /* Secondary: Sophisticated Gray-Blue */
-  --secondary: 220 14% 91%;
-  --secondary-foreground: 220 25% 8%;
-  --secondary-hover: 220 14% 86%;
+  /* Secondary - Quantum Violet */
+  --secondary: 258 90% 66%;          /* Electric Violet */
+  --secondary-foreground: 0 0% 100%;
+  --secondary-hover: 258 90% 60%;
   
-  /* Muted: Soft Background Tones */
-  --muted: 220 13% 95%;
-  --muted-foreground: 220 8% 46%;
+  /* Muted Elements */
+  --muted: 220 14% 96%;              /* Light Gray */
+  --muted-foreground: 220 8.9% 46.1%;
   
-  /* Accent: Teal for Highlights */
-  --accent: 178 60% 48%;
+  /* Accent - Neon Emerald */
+  --accent: 142 76% 36%;             /* Emerald Green */
   --accent-foreground: 0 0% 100%;
-  --accent-hover: 178 60% 43%;
+  --accent-hover: 142 76% 32%;
   
-  /* Status Colors */
-  --destructive: 0 75% 60%;
-  --destructive-foreground: 0 0% 98%;
-  --warning: 35 91% 62%;
-  --warning-foreground: 35 15% 8%;
-  --success: 140 69% 49%;
-  --success-foreground: 0 0% 98%;
-  --info: 210 98% 63%;
-  --info-foreground: 0 0% 98%;
+  /* Status Colors - High Contrast System */
+  --destructive: 0 84% 60%;          /* Bright Red */
+  --destructive-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;             /* Amber Warning */
+  --warning-foreground: 0 0% 100%;
+  --success: 142 76% 36%;            /* Emerald Success */
+  --success-foreground: 0 0% 100%;
+  --info: 199 89% 48%;               /* Info Blue */
+  --info-foreground: 0 0% 100%;
   
   /* UI Elements */
-  --border: 220 13% 88%;
-  --input: 220 13% 93%;
-  --ring: 225 73% 57%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 199 89% 48%;
   
-  /* InsightLoop Branded Colors */
-  --insight-primary: 225 73% 57%;
-  --insight-secondary: 178 60% 48%;
-  --insight-tertiary: 267 84% 65%;
-  --insight-quaternary: 32 98% 67%;
+  /* VORTEX BRAND COLORS */
+  --vortex-primary: 199 89% 48%;     /* Electric Cerulean */
+  --vortex-secondary: 258 90% 66%;   /* Electric Violet */
+  --vortex-accent: 142 76% 36%;      /* Neon Emerald */
+  --vortex-warning: 38 92% 50%;      /* Amber */
+  --vortex-surface: 220 14% 96%;     /* Light Surface */
   
   /* Chart Colors - Optimized for Data Visualization */
   --chart-1: 225 73% 57%;    /* Primary Blue */
@@ -61,53 +65,57 @@
 }
 
 .dark {
-  /* InsightLoop AI Analytics Dark Theme */
-  --background: 220 27% 3%;
-  --foreground: 220 8% 95%;
-  --card: 220 25% 5%;
-  --card-foreground: 220 8% 95%;
-  --popover: 220 25% 5%;
-  --popover-foreground: 220 8% 95%;
+  /* INSIGHTLOOP VORTEX THEME - DARK MODE */
+  /* Midnight Command Center with Neon Accents */
   
-  /* Primary: Bright AI Blue */
-  --primary: 225 84% 67%;
-  --primary-foreground: 220 27% 3%;
-  --primary-hover: 225 84% 72%;
+  /* Base Colors - Deep Professional Dark */
+  --background: 222 84% 4.9%;        /* Deep Midnight Navy */
+  --foreground: 210 40% 98%;         /* Bright White */
+  --card: 222 84% 4.9%;              /* Card Background */
+  --card-foreground: 210 40% 98%;
+  --popover: 222 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
   
-  /* Secondary: Dark Sophisticated Tone */
-  --secondary: 220 15% 11%;
-  --secondary-foreground: 220 8% 85%;
-  --secondary-hover: 220 15% 16%;
+  /* Primary Brand - Bright Vortex Blue */
+  --primary: 199 89% 68%;            /* Bright Cerulean */
+  --primary-foreground: 222 84% 4.9%;
+  --primary-hover: 199 89% 72%;
   
-  /* Muted: Dark Background Variations */
-  --muted: 220 15% 8%;
-  --muted-foreground: 220 5% 65%;
+  /* Secondary - Neon Violet */
+  --secondary: 258 90% 76%;          /* Bright Electric Violet */
+  --secondary-foreground: 222 84% 4.9%;
+  --secondary-hover: 258 90% 80%;
   
-  /* Accent: Bright Teal */
-  --accent: 178 70% 58%;
-  --accent-foreground: 220 27% 3%;
-  --accent-hover: 178 70% 63%;
+  /* Muted Elements */
+  --muted: 215 27.9% 16.9%;          /* Dark Gray */
+  --muted-foreground: 217.9 10.6% 64.9%;
   
-  /* Status Colors - Dark Mode Optimized */
-  --destructive: 0 85% 65%;
-  --destructive-foreground: 0 0% 98%;
-  --warning: 35 100% 72%;
-  --warning-foreground: 35 25% 8%;
-  --success: 140 79% 59%;
-  --success-foreground: 140 25% 8%;
-  --info: 210 98% 73%;
-  --info-foreground: 210 25% 8%;
+  /* Accent - Bright Neon Emerald */
+  --accent: 142 76% 56%;             /* Bright Emerald */
+  --accent-foreground: 222 84% 4.9%;
+  --accent-hover: 142 76% 60%;
+  
+  /* Status Colors - Neon System States */
+  --destructive: 0 92% 72%;          /* Bright Neon Red */
+  --destructive-foreground: 222 84% 4.9%;
+  --warning: 38 92% 70%;             /* Bright Amber */
+  --warning-foreground: 222 84% 4.9%;
+  --success: 142 76% 56%;            /* Bright Emerald */
+  --success-foreground: 222 84% 4.9%;
+  --info: 199 89% 68%;               /* Bright Cerulean */
+  --info-foreground: 222 84% 4.9%;
   
   /* UI Elements */
-  --border: 220 15% 16%;
-  --input: 220 15% 8%;
-  --ring: 225 84% 67%;
+  --border: 215 27.9% 16.9%;
+  --input: 215 27.9% 16.9%;
+  --ring: 199 89% 68%;
   
-  /* InsightLoop Branded Colors - Dark Mode */
-  --insight-primary: 225 84% 67%;
-  --insight-secondary: 178 70% 58%;
-  --insight-tertiary: 267 94% 75%;
-  --insight-quaternary: 32 100% 77%;
+  /* VORTEX BRAND COLORS - DARK */
+  --vortex-primary: 199 89% 68%;     /* Bright Cerulean */
+  --vortex-secondary: 258 90% 76%;   /* Bright Violet */
+  --vortex-accent: 142 76% 56%;      /* Bright Emerald */
+  --vortex-warning: 38 92% 70%;      /* Bright Amber */
+  --vortex-surface: 215 27.9% 16.9%; /* Dark Surface */
   
   /* Chart Colors - Dark Mode Optimized */
   --chart-1: 225 84% 67%;    /* Bright Blue */
@@ -123,29 +131,95 @@
 }
 
 body {
-  background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+  /* VORTEX LIGHT MODE - Clean Professional Background */
+  background: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-feature-settings: 'cv01', 'cv02', 'cv03', 'cv04';
+  position: relative;
+  min-height: 100vh;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: -0.011em;
 }
 
-/* Enhanced InsightLoop visual effects */
+/* Subtle grid pattern for light mode */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(hsla(var(--vortex-primary), 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, hsla(var(--vortex-primary), 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* VORTEX DARK MODE - Midnight Command Center */
+.dark body {
+  background: 
+    radial-gradient(circle at 25% 25%, hsla(var(--vortex-primary), 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, hsla(var(--vortex-secondary), 0.10) 0%, transparent 50%),
+    radial-gradient(circle at 50% 0%, hsla(var(--vortex-accent), 0.05) 0%, transparent 50%),
+    hsl(var(--background));
+}
+
+/* Enhanced grid pattern for dark mode */
+.dark body::before {
+  background-image: 
+    linear-gradient(hsla(var(--vortex-primary), 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, hsla(var(--vortex-primary), 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.6;
+}
+
+/* Smooth fade animation for body */
+body {
+  animation: fade-in 0.5s ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* VORTEX CARD SYSTEM */
 .card {
-  backdrop-filter: blur(12px);
-  border: 1px solid hsl(var(--border) / 0.6);
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
   box-shadow: 
-    0 2px 8px 0 hsl(var(--foreground) / 0.04),
-    0 6px 20px -6px hsl(var(--foreground) / 0.08);
-  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.98) 100%);
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease-out;
 }
 
-.dark .card {
-  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%);
-  border: 1px solid hsl(var(--border) / 0.8);
+/* Card hover effect */
+.card:hover {
+  transform: translateY(-1px);
   box-shadow: 
-    0 2px 8px 0 hsl(var(--primary) / 0.08),
-    0 6px 20px -6px hsl(var(--primary) / 0.12),
-    inset 0 1px 0 0 hsl(var(--primary) / 0.1);
+    0 4px 12px 0 rgba(0, 0, 0, 0.1),
+    0 2px 4px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Dark mode cards */
+.dark .card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 
+    0 1px 3px 0 rgba(0, 0, 0, 0.3),
+    0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.dark .card:hover {
+  box-shadow: 
+    0 4px 12px 0 rgba(0, 0, 0, 0.4),
+    0 2px 4px 0 rgba(0, 0, 0, 0.3);
 }
 
 /* InsightLoop Button Animations */
@@ -395,4 +469,67 @@ nav {
 .dark .prose pre {
   background: hsl(var(--muted));
   color: hsl(var(--foreground));
+}
+
+/* ================================
+   VORTEX CLEAN ANIMATIONS
+   ================================ */
+
+/* Subtle fade-in animation */
+@keyframes fade-in {
+  from { 
+    opacity: 0; 
+    transform: translateY(4px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+}
+
+/* Loading spinner */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Pulse animation for loading states */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Apply animations */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* ================================
+   VORTEX UTILITY CLASSES
+   ================================ */
+
+/* Brand gradient text */
+.vortex-gradient-text {
+  background: linear-gradient(135deg, hsl(var(--vortex-primary)), hsl(var(--vortex-secondary)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+/* Highlight accent */
+.vortex-accent {
+  color: hsl(var(--vortex-accent));
+  font-weight: 600;
+}
+
+/* ================================
+   CLEAN FOCUS AND ACCESSIBILITY
+   ================================ */
+
+/* Enhanced focus states */
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: 4px;
 }
