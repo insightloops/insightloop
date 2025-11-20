@@ -3,11 +3,12 @@
 import { useParams } from 'next/navigation';
 import { useProduct } from '@/hooks/useProducts';
 import { useCompany } from '@/hooks/useCompanies';
+import { useProductAreas } from '@/hooks/useProductAreas';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Package, Building2, Calendar, Edit, Target, Plus } from 'lucide-react';
+import { Loader2, Package, Building2, Calendar, Edit, Target, Plus, Brain, Settings } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ProductDetailPage() {
@@ -15,8 +16,9 @@ export default function ProductDetailPage() {
   const companyId = params.companyId as string;
   const productId = params.productId as string;
   
-  const { product, loading: productLoading, error: productError } = useProduct(productId);
+  const { product, loading: productLoading, error: productError } = useProduct(productId, companyId);
   const { company, loading: companyLoading } = useCompany(companyId);
+  const { productAreas, loading: areasLoading, error: areasError } = useProductAreas(productId, false, companyId);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Unknown';
@@ -78,16 +80,16 @@ export default function ProductDetailPage() {
           </div>
         </div>
         <div className="flex gap-2">
+          <Link href={`/companies/${companyId}/products/${productId}/pipeline`}>
+            <Button className="flex items-center gap-2">
+              <Brain className="h-4 w-4" />
+              Feedback Pipeline
+            </Button>
+          </Link>
           <Button variant="outline" className="flex items-center gap-2">
             <Edit className="h-4 w-4" />
             Edit Product
           </Button>
-          <Link href={`/products/${product.id}/areas`}>
-            <Button className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              Manage Areas
-            </Button>
-          </Link>
         </div>
       </div>
 
@@ -168,20 +170,78 @@ export default function ProductDetailPage() {
                 Organize features into logical areas within this product
               </CardDescription>
             </div>
-            <Link href={`/products/${product.id}/areas`}>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Add Area
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link href={`/companies/${companyId}/products/${product.id}/areas`}>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Manage Areas
+                </Button>
+              </Link>
+              <Link href={`/companies/${companyId}/products/${product.id}/areas`}>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Area
+                </Button>
+              </Link>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No product areas yet.</p>
-            <p className="text-sm">Create areas to organize your product features.</p>
-          </div>
+          {areasLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+              <span>Loading product areas...</span>
+            </div>
+          ) : areasError ? (
+            <Alert className="border-red-200 bg-red-50">
+              <AlertDescription className="text-red-800">
+                Failed to load product areas: {areasError}
+              </AlertDescription>
+            </Alert>
+          ) : productAreas.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {productAreas.map((area) => (
+                <Link 
+                  key={area.id} 
+                  href={`/companies/${companyId}/products/${product.id}/areas/${area.id}`}
+                  className="block"
+                >
+                  <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
+                    <CardHeader>
+                      <CardTitle className="text-base">{area.name}</CardTitle>
+                      {area.description && (
+                        <CardDescription className="text-sm">
+                          {area.description}
+                        </CardDescription>
+                      )}
+                    </CardHeader>
+                    <CardContent>
+                      {area.keywords && area.keywords.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {area.keywords.slice(0, 3).map((keyword) => (
+                            <Badge key={keyword} variant="secondary" className="text-xs">
+                              {keyword}
+                            </Badge>
+                          ))}
+                          {area.keywords.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{area.keywords.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No product areas yet.</p>
+              <p className="text-sm">Create areas to organize your product features.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

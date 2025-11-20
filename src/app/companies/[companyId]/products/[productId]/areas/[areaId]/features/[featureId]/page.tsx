@@ -11,14 +11,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, ArrowLeft, Zap, Star, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FeatureStatus, FeaturePriority, Feature } from '@/types/database';
+import { FeatureStatus, FeaturePriority, Feature } from '@/types';
 import Link from 'next/link';
 
 const statusIcons = {
   [FeatureStatus.PLANNED]: AlertCircle,
   [FeatureStatus.IN_PROGRESS]: Clock,
   [FeatureStatus.COMPLETED]: CheckCircle,
-  [FeatureStatus.ON_HOLD]: Clock,
   [FeatureStatus.CANCELLED]: XCircle,
 };
 
@@ -26,7 +25,6 @@ const statusColors = {
   [FeatureStatus.PLANNED]: 'text-yellow-600 bg-yellow-50 border-yellow-200',
   [FeatureStatus.IN_PROGRESS]: 'text-blue-600 bg-blue-50 border-blue-200',
   [FeatureStatus.COMPLETED]: 'text-green-700 bg-green-100 border-green-300',
-  [FeatureStatus.ON_HOLD]: 'text-gray-600 bg-gray-50 border-gray-200',
   [FeatureStatus.CANCELLED]: 'text-red-600 bg-red-50 border-red-200',
 };
 

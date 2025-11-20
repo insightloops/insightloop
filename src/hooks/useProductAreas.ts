@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Database } from '@/types/database'
+import { useUserIdSync } from '@/hooks/useCurrentUser'
 
 type ProductArea = Database['public']['Tables']['product_areas']['Row']
 
@@ -26,20 +27,31 @@ interface ProductAreasResponse {
   product_areas: ProductArea[]
 }
 
-export function useProductAreas(productId?: string, hierarchical: boolean = false): UseProductAreasResult {
+export function useProductAreas(productId?: string, hierarchical: boolean = false, companyId?: string): UseProductAreasResult {
   const [productAreas, setProductAreas] = useState<ProductArea[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const userId = useUserIdSync()
 
   const fetchProductAreas = async () => {
+    if (!productId) {
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
       
-      let url = '/api/product-areas'
+      // Use company-nested route if companyId is provided, otherwise fallback to direct route
+      let url = companyId 
+        ? `/api/companies/${companyId}/products/${productId}/areas`
+        : '/api/product-areas'
+      
       const params = new URLSearchParams()
       
-      if (productId) {
+      // Only add productId param if using the direct route
+      if (!companyId && productId) {
         params.append('product_id', productId)
       }
       
@@ -51,7 +63,12 @@ export function useProductAreas(productId?: string, hierarchical: boolean = fals
         url += `?${params.toString()}`
       }
       
-      const response = await fetch(url)
+      const response = await fetch(url, {
+        headers: {
+          'x-user-id': userId,
+          'Content-Type': 'application/json'
+        }
+      })
       
       if (!response.ok) {
         throw new Error(`Failed to fetch product areas: ${response.statusText}`)
@@ -68,10 +85,16 @@ export function useProductAreas(productId?: string, hierarchical: boolean = fals
 
   const createProductArea = async (areaData: CreateProductAreaData): Promise<ProductArea> => {
     try {
-      const response = await fetch('/api/product-areas', {
+      // Use company-nested route if companyId is provided, otherwise fallback to direct route
+      const url = (companyId && productId) 
+        ? `/api/companies/${companyId}/products/${productId}/areas`
+        : '/api/product-areas'
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': userId,
         },
         body: JSON.stringify(areaData),
       });
@@ -114,10 +137,11 @@ interface UseProductAreaResult {
   refetch: () => Promise<void>
 }
 
-export function useProductArea(areaId: string): UseProductAreaResult {
+export function useProductArea(areaId: string, companyId?: string, productId?: string): UseProductAreaResult {
   const [productArea, setProductArea] = useState<ProductArea | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const userId = useUserIdSync()
 
   const fetchProductArea = async () => {
     if (!areaId) return
@@ -126,7 +150,17 @@ export function useProductArea(areaId: string): UseProductAreaResult {
       setLoading(true)
       setError(null)
       
-      const response = await fetch(`/api/product-areas/${areaId}`)
+      // Use company-nested route if companyId and productId are provided, otherwise fallback to direct route
+      const url = (companyId && productId) 
+        ? `/api/companies/${companyId}/products/${productId}/areas/${areaId}`
+        : `/api/product-areas/${areaId}`
+      
+      const response = await fetch(url, {
+        headers: {
+          'x-user-id': userId,
+          'Content-Type': 'application/json'
+        }
+      })
       
       if (!response.ok) {
         throw new Error(`Failed to fetch product area: ${response.statusText}`)

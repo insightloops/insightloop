@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Feature, FeatureStatus, FeaturePriority } from '@/types/database'
+import { Feature, FeatureStatus, FeaturePriority } from '@/types'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { Card } from './ui/card'
@@ -25,7 +25,6 @@ const statusColors = {
   [FeatureStatus.PLANNED]: 'bg-blue-100 text-blue-800',
   [FeatureStatus.IN_PROGRESS]: 'bg-yellow-100 text-yellow-800',
   [FeatureStatus.COMPLETED]: 'bg-green-100 text-green-800',
-  [FeatureStatus.ON_HOLD]: 'bg-gray-100 text-gray-800',
   [FeatureStatus.CANCELLED]: 'bg-red-100 text-red-800'
 }
 
@@ -40,7 +39,6 @@ const statusLabels = {
   [FeatureStatus.PLANNED]: 'Planned',
   [FeatureStatus.IN_PROGRESS]: 'In Progress',
   [FeatureStatus.COMPLETED]: 'Completed',
-  [FeatureStatus.ON_HOLD]: 'On Hold',
   [FeatureStatus.CANCELLED]: 'Cancelled'
 }
 

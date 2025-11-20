@@ -138,4 +138,32 @@ export class ProductAreaRepository {
       throw new Error(`Failed to delete product area: ${error.message}`);
     }
   }
+
+  /**
+   * Get product areas formatted for AI matching
+   * Returns simplified data for feedback enrichment
+   */
+  async getProductAreasForMatching(productId: string): Promise<Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    keywords: string[];
+  }>> {
+    const { data, error } = await this.supabase
+      .from('product_areas')
+      .select('id, name, description, keywords')
+      .eq('product_id', productId)
+      .order('name', { ascending: true });
+
+    if (error) {
+      throw new Error(`Failed to get product areas for matching: ${error.message}`);
+    }
+
+    return data.map(area => ({
+      id: area.id,
+      name: area.name,
+      description: area.description,
+      keywords: area.keywords || []
+    }));
+  }
 }

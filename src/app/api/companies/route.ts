@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import {  NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { CompanyService } from '@/lib/services/CompanyService';
 import { createAuthenticatedHandler, AuthenticatedRequest } from '@/lib/middleware/auth';

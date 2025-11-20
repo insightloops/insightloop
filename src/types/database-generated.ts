@@ -34,6 +34,52 @@ export type Database = {
   }
   public: {
     Tables: {
+      cluster_memberships: {
+        Row: {
+          cluster_id: string
+          created_at: string | null
+          feedback_id: string
+          id: string
+          similarity_score: number | null
+        }
+        Insert: {
+          cluster_id: string
+          created_at?: string | null
+          feedback_id: string
+          id?: string
+          similarity_score?: number | null
+        }
+        Update: {
+          cluster_id?: string
+          created_at?: string | null
+          feedback_id?: string
+          id?: string
+          similarity_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cluster_memberships_cluster_id_fkey"
+            columns: ["cluster_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_clusters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cluster_memberships_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_enriched"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cluster_memberships_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           created_at: string | null
@@ -130,11 +176,103 @@ export type Database = {
           },
         ]
       }
+      feedback_clusters: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          size: number | null
+          theme: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          size?: number | null
+          theme?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          size?: number | null
+          theme?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_clusters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_features: {
+        Row: {
+          confidence_score: number | null
+          created_at: string | null
+          feature_id: string
+          feedback_id: string
+          id: string
+          tagged_by: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string | null
+          feature_id: string
+          feedback_id: string
+          id?: string
+          tagged_by?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string | null
+          feature_id?: string
+          feedback_id?: string
+          id?: string
+          tagged_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_features_feature_id_fkey"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "features"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_features_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_enriched"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_features_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback_items: {
         Row: {
           company_id: string
           content: string
           created_at: string | null
+          enriched_at: string | null
+          enrichment_version: number | null
           id: string
           processed_at: string | null
           product_area: string | null
@@ -148,6 +286,8 @@ export type Database = {
           company_id: string
           content: string
           created_at?: string | null
+          enriched_at?: string | null
+          enrichment_version?: number | null
           id?: string
           processed_at?: string | null
           product_area?: string | null
@@ -161,6 +301,8 @@ export type Database = {
           company_id?: string
           content?: string
           created_at?: string | null
+          enriched_at?: string | null
+          enrichment_version?: number | null
           id?: string
           processed_at?: string | null
           product_area?: string | null
@@ -176,6 +318,55 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_product_areas: {
+        Row: {
+          confidence_score: number | null
+          created_at: string | null
+          feedback_id: string
+          id: string
+          product_area_id: string
+          tagged_by: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string | null
+          feedback_id: string
+          id?: string
+          product_area_id: string
+          tagged_by?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string | null
+          feedback_id?: string
+          id?: string
+          product_area_id?: string
+          tagged_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_product_areas_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_enriched"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_product_areas_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_product_areas_product_area_id_fkey"
+            columns: ["product_area_id"]
+            isOneToOne: false
+            referencedRelation: "product_areas"
             referencedColumns: ["id"]
           },
         ]
@@ -242,6 +433,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "insight_feedback_links_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_enriched"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "insight_feedback_links_feedback_id_fkey"
             columns: ["feedback_id"]
@@ -506,7 +704,37 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      feedback_enriched: {
+        Row: {
+          cluster_themes: string[] | null
+          clusters: Json | null
+          company_id: string | null
+          content: string | null
+          created_at: string | null
+          enriched_at: string | null
+          enrichment_version: number | null
+          feature_names: string[] | null
+          features: Json | null
+          id: string | null
+          primary_product_area: string | null
+          primary_sentiment: string | null
+          processed_at: string | null
+          product_area_names: string[] | null
+          product_areas: Json | null
+          source: string | null
+          submitted_at: string | null
+          user_metadata: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never

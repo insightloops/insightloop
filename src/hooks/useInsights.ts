@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Insight, InsightWithEvidence } from '@/types/database'
+import { Insight, InsightWithEvidence } from '@/types'
 import { useUserIdSync } from '@/hooks/useCurrentUser'
 
 interface InsightFilters {

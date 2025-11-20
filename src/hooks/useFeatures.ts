@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Feature, FeatureInsert, FeatureUpdate, FeatureStatus, FeaturePriority } from '@/types/database'
+import { Feature, FeatureInsert, FeatureUpdate, FeatureStatus, FeaturePriority } from '@/types'
 
 export function useFeatures(companyId?: string, productAreaId?: string) {
   const [features, setFeatures] = useState<Feature[]>([])

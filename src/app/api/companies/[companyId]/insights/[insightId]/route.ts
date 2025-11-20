@@ -38,9 +38,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { companyId: string; insightId: string } }
+  { params }: { params: Promise<{ companyId: string; insightId: string }> }
 ) {
   try {
+    const { companyId, insightId } = await params
     const body = await request.json()
     const { insight_score, urgency_score, volume_score, value_alignment_score, status } = body
 
@@ -53,10 +54,10 @@ export async function PUT(
     if (value_alignment_score !== undefined) scores.value_alignment_score = value_alignment_score
     if (status !== undefined) scores.status = status
 
-    const updatedInsight = await insightService.updateInsightScore(params.insightId, scores)
+    const updatedInsight = await insightService.updateInsightScore(insightId, scores)
 
     // Verify the insight belongs to the company
-    if (updatedInsight.company_id !== params.companyId) {
+    if (updatedInsight.company_id !== companyId) {
       return NextResponse.json(
         { error: 'Insight not found' },
         { status: 404 }

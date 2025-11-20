@@ -24,6 +24,7 @@ interface ProductAreaNode extends ProductArea {
 interface ProductAreaListProps {
   productAreas: ProductArea[];
   productName?: string;
+  companyId?: string;
   onCreateNew: (parentId?: string) => void;
   onEditArea?: (area: ProductArea) => void;
 }
@@ -31,6 +32,7 @@ interface ProductAreaListProps {
 export function ProductAreaList({ 
   productAreas, 
   productName, 
+  companyId,
   onCreateNew,
   onEditArea 
 }: ProductAreaListProps) {
@@ -154,7 +156,12 @@ export function ProductAreaList({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.location.href = `/products/${node.product_id}/areas/${node.id}/features`}
+                        onClick={() => {
+                          const url = companyId 
+                            ? `/companies/${companyId}/products/${node.product_id}/areas/${node.id}/features`
+                            : `/products/${node.product_id}/areas/${node.id}/features`
+                          window.location.href = url
+                        }}
                         className="flex items-center gap-1"
                       >
                         <Package className="h-3 w-3" />

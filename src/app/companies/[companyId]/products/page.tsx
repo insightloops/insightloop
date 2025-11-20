@@ -29,6 +29,11 @@ export default function CompanyProductsPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
+  const handleCreateNew = () => {
+    setShowCreateForm(true);
+    setCreateError(null);
+  };
+
   const handleCreateProduct = async (formData: FormData) => {
     try {
       setIsCreating(true);
@@ -46,11 +51,6 @@ export default function CompanyProductsPage() {
     } finally {
       setIsCreating(false);
     }
-  };
-
-  const handleCreateNew = () => {
-    setShowCreateForm(true);
-    setCreateError(null);
   };
 
   const handleCancel = () => {
@@ -110,6 +110,7 @@ export default function CompanyProductsPage() {
       <ProductList 
         products={products} 
         companyName={company.name}
+        companyId={companyId}
         onCreateNew={handleCreateNew}
         showCompanyInfo={false}
       />

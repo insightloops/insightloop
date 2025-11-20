@@ -4,6 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Navigation } from "@/components/Navigation";
+import { APIKeyProvider } from "@/contexts/APIKeyContext";
+import { APIKeySettings } from "@/components/APIKeySettings";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,22 +38,27 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="min-h-screen bg-background">
-            <header className="border-b">
-              <div className="container mx-auto px-4 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-8">
-                    <h1 className="text-xl font-bold">InsightLoop</h1>
-                    <Navigation />
+          <APIKeyProvider>
+            <div className="min-h-screen bg-background">
+              <header className="border-b">
+                <div className="container mx-auto px-4 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-8">
+                      <h1 className="text-xl font-bold">InsightLoop</h1>
+                      <Navigation />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <APIKeySettings />
+                      <ThemeToggle />
+                    </div>
                   </div>
-                  <ThemeToggle />
                 </div>
-              </div>
-            </header>
-            <main className="container mx-auto px-4 py-8">
-              {children}
-            </main>
-          </div>
+              </header>
+              <main className="container mx-auto px-4 py-8">
+                {children}
+              </main>
+            </div>
+          </APIKeyProvider>
         </ThemeProvider>
       </body>
     </html>

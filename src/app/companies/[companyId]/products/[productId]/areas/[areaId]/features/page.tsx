@@ -12,7 +12,7 @@ import { useFeatures } from '@/hooks/useFeatures'
 import { useProductAreas } from '@/hooks/useProductAreas'
 import { useCompany } from '@/hooks/useCompanies'
 import { useDebouncedFeatureSearch } from '@/hooks/useFeatureSearch'
-import { Feature, FeatureInsert, FeatureUpdate, FeatureStatus, FeaturePriority } from '@/types/database'
+import { Feature, FeatureInsert, FeatureUpdate, FeatureStatus, FeaturePriority } from '@/types'
 
 export default function ProductAreaFeaturesPage() {
   const params = useParams()

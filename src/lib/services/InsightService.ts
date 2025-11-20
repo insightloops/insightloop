@@ -1,7 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { InsightRepository } from '@/lib/repositories/InsightRepository'
 import { FeedbackRepository } from '@/lib/repositories/FeedbackRepository'
-import { Insight, InsightWithEvidence, FeedbackItem } from '@/types/database'
+import { Insight, InsightWithEvidence, FeedbackItem } from '@/types'
 
 export class InsightService {
   private insightRepository: InsightRepository

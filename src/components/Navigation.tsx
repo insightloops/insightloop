@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Building2, Package, Target, MessageSquare, BarChart3, Search } from 'lucide-react';
+import { Building2, BarChart3 } from 'lucide-react';
 
 const navigation = [
   {
@@ -15,26 +15,6 @@ const navigation = [
     name: 'Companies',
     href: '/companies',
     icon: Building2,
-  },
-  {
-    name: 'Products',
-    href: '/products',
-    icon: Package,
-  },
-  {
-    name: 'Search',
-    href: '/search',
-    icon: Search,
-  },
-  {
-    name: 'Feedback',
-    href: '/feedback',
-    icon: MessageSquare,
-  },
-  {
-    name: 'Chat',
-    href: '/chat',
-    icon: Target,
   },
 ];
 
