@@ -1,0 +1,1885 @@
+# InsightLoop - Proof of Concept
+
+```elixir
+Mix.install([
+  {:req_llm, "~> 1.0"},
+  {:nimble_csv, "~> 1.3"},
+  {:kino_explorer, "~> 0.1.25"},
+  {:kino_vega_lite, "~> 0.1.13"}
+])
+
+# Setup the CSV Parser module
+NimbleCSV.define(CsvParser, separator: ",", escape: "\"")
+```
+
+## Introduction
+
+This notebook demonstrates the **InsightLoop Context Engine** - a data pipeline that:
+
+1. **Loads** feedback from multiple CSV sources
+2. **Enriches** feedback by mapping it to product areas and features using AI
+3. **Clusters** similar feedback into insights
+4. **Prioritizes** insights based on volume, sentiment, and user value
+
+The goal: Transform scattered customer feedback into **high-confidence, traceable insights**.
+
+---
+
+## Section 0: Config
+
+Add the root directories and constants we will use later on
+
+```elixir
+# CSV directories
+
+# base_directory = "/mnt/d/dev/insightloop"
+base_directory = "D:/dev/insightloop"
+
+# Product map
+product_areas_path = Path.join(base_directory, "Product_Areas.csv")
+features_path = Path.join(base_directory, "Features.csv")
+
+# VOC paths
+feature_feedback_path = Path.join(base_directory, "VOC_Feature_Feedback.csv")
+churn_survey_path = Path.join(base_directory, "VOC_Churn_Survey.csv")
+nps_feedback_path = Path.join(base_directory, "VOC_NPS_General_Feedback.csv")
+problem_validation_path = Path.join(base_directory, "VOC_Problem_Validation.csv")
+user_interviews_path = Path.join(base_directory, "VOC_User_Interviews.csv")
+
+# Claude sonnet 4.5 thinking model
+model = "amazon-bedrock:us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+
+:ok
+```
+
+## Section 1: Load Context Data (Product Areas & Features)
+
+First, we load the **product taxonomy** - this gives the AI context about what features and areas exist in the product.
+
+```elixir
+# Load Product Areas
+product_areas_raw =
+  product_areas_path
+  |> File.read!()
+  |> CsvParser.parse_string(skip_headers: false)
+
+[_headers | product_areas_data] = product_areas_raw
+
+product_areas =
+  product_areas_data
+  |> Enum.map(fn [id, name, description, themes] ->
+    %{
+      id: id,
+      name: name,
+      description: description,
+      example_themes: themes
+    }
+  end)
+
+# Load Features
+features_raw =
+  features_path
+  |> File.read!()
+  |> CsvParser.parse_string(skip_headers: false)
+
+[_headers | features_data] = features_raw
+
+features =
+  features_data
+  |> Enum.map(fn [id, name, product_area_id, description] ->
+    %{
+      id: id,
+      name: name,
+      product_area_id: product_area_id,
+      description: description
+    }
+  end)
+
+IO.puts("✅ Loaded #{length(product_areas)} product areas")
+IO.puts("✅ Loaded #{length(features)} features")
+
+{product_areas, features}
+```
+
+## View Product Areas
+
+```elixir
+require Explorer.DataFrame, as: DF
+
+product_areas_df =
+  product_areas
+  |> DF.new()
+
+product_areas_df
+```
+
+## View Features
+
+```elixir
+features_df =
+  features
+  |> DF.new()
+
+features_df
+```
+
+---
+
+## Section 2: Load All Feedback Data
+
+We'll load all 5 VOC sources and normalize them into a unified structure.
+
+```elixir
+defmodule FeedbackLoader do
+  def load_feature_feedback(path) do
+    path
+    |> File.read!()
+    |> CsvParser.parse_string(skip_headers: false)
+    |> then(fn [_headers | data] -> data end)
+    |> Enum.map(fn [user_id, frequency, satisfaction, working, frustrating, improvement] ->
+      %{
+        id: user_id,
+        source: "feature_feedback",
+        text: "What's working: #{working}. What's frustrating: #{frustrating}. Suggested improvement: #{improvement}",
+        metadata: %{
+          frequency: frequency,
+          satisfaction: String.to_integer(satisfaction),
+          working: working,
+          frustrating: frustrating,
+          improvement: improvement
+        }
+      }
+    end)
+  end
+
+  def load_churn_survey(path) do
+    path
+    |> File.read!()
+    |> CsvParser.parse_string(skip_headers: false)
+    |> then(fn [_headers | data] -> data end)
+    |> Enum.map(fn [customer_id, plan_type, duration, primary_reason, open_feedback, suggested_improvement] ->
+      %{
+        id: customer_id,
+        source: "churn_survey",
+        text: "Reason for churn: #{primary_reason}. Feedback: #{open_feedback}. Suggestion: #{suggested_improvement}",
+        metadata: %{
+          plan_type: plan_type,
+          duration_months: duration,
+          primary_reason: primary_reason,
+          open_feedback: open_feedback,
+          suggested_improvement: suggested_improvement
+        }
+      }
+    end)
+  end
+
+  def load_nps_feedback(path) do
+    path
+    |> File.read!()
+    |> CsvParser.parse_string(skip_headers: false)
+    |> then(fn [_headers | data] -> data end)
+    |> Enum.map(fn [user_id, nps_score, comment] ->
+      %{
+        id: user_id,
+        source: "nps_feedback",
+        text: comment,
+        metadata: %{
+          nps_score: String.to_integer(nps_score),
+          comment: comment
+        }
+      }
+    end)
+  end
+
+  def load_problem_validation(path) do
+    path
+    |> File.read!()
+    |> CsvParser.parse_string(skip_headers: false)
+    |> then(fn [_headers | data] -> data end)
+    |> Enum.map(fn [respondent_id, role, company_size, biggest_pain, current_solution, ideal_solution] ->
+      %{
+        id: respondent_id,
+        source: "problem_validation",
+        text: "Biggest pain: #{biggest_pain}. Current solution: #{current_solution}. Ideal solution: #{ideal_solution}",
+        metadata: %{
+          role: role,
+          company_size: company_size,
+          biggest_pain: biggest_pain,
+          current_solution: current_solution,
+          ideal_solution: ideal_solution
+        }
+      }
+    end)
+  end
+
+  def load_user_interviews(path) do
+    path
+    |> File.read!()
+    |> CsvParser.parse_string(skip_headers: false)
+    |> then(fn [_headers | data] -> data end)
+    |> Enum.map(fn [interview_id, topic, language, transcript] ->
+      %{
+        id: interview_id,
+        source: "user_interviews",
+        text: "Interview about #{topic}: #{transcript}",
+        metadata: %{
+          topic: topic,
+          language: language,
+          transcript: transcript
+        }
+      }
+    end)
+  end
+
+  def load_all(paths) do
+    feature_feedback = load_feature_feedback(paths.feature_feedback)
+    churn_survey = load_churn_survey(paths.churn_survey)
+    nps_feedback = load_nps_feedback(paths.nps_feedback)
+    problem_validation = load_problem_validation(paths.problem_validation)
+    user_interviews = load_user_interviews(paths.user_interviews)
+
+    IO.puts("✅ Loaded #{length(feature_feedback)} feature feedback items")
+    IO.puts("✅ Loaded #{length(churn_survey)} churn survey items")
+    IO.puts("✅ Loaded #{length(nps_feedback)} NPS feedback items")
+    IO.puts("✅ Loaded #{length(problem_validation)} problem validation items")
+    IO.puts("✅ Loaded #{length(user_interviews)} user interview items")
+
+    all_feedback = feature_feedback ++ churn_survey ++ nps_feedback ++ problem_validation ++ user_interviews
+
+    IO.puts("\n🎯 Total feedback items: #{length(all_feedback)}")
+
+    all_feedback
+  end
+end
+
+# Load all feedback sources
+feedback_paths = %{
+  feature_feedback: feature_feedback_path,
+  churn_survey: churn_survey_path,
+  nps_feedback: nps_feedback_path,
+  problem_validation: problem_validation_path,
+  user_interviews: user_interviews_path
+}
+
+feedback_items = FeedbackLoader.load_all(feedback_paths)
+```
+
+## View Feedback as DataFrame
+
+```elixir
+feedback_df =
+  feedback_items
+  |> Enum.map(fn item ->
+    %{
+      id: item.id,
+      source: item.source,
+      text_preview: String.slice(item.text, 0..100) <> "..."
+    }
+  end)
+  |> DF.new()
+
+feedback_df
+```
+
+## View Feedback by Source
+
+```elixir
+feedback_by_source =
+  feedback_items
+  |> Enum.group_by(& &1.source)
+  |> Enum.map(fn {source, items} -> {source, length(items)} end)
+  |> Enum.sort_by(fn {_source, count} -> count end, :desc)
+
+IO.puts("📊 Feedback Distribution by Source:\n")
+
+feedback_by_source
+|> Enum.each(fn {source, count} ->
+  IO.puts("  #{source}: #{count} items")
+end)
+
+feedback_by_source
+```
+
+## Sample Feedback Items from Each Source
+
+Let's look at one feedback item from each source:
+
+```elixir
+IO.puts("📋 Sample Feedback from Each Source:\n")
+
+feedback_items
+|> Enum.group_by(& &1.source)
+|> Enum.each(fn {source, items} ->
+  sample = Enum.at(items, 0)
+  IO.puts("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+  IO.puts("Source: #{source}")
+  IO.puts("ID: #{sample.id}")
+  IO.puts("Text: #{String.slice(sample.text, 0..150)}...")
+  IO.puts("Metadata keys: #{inspect(Map.keys(sample.metadata))}")
+  IO.puts("")
+end)
+
+# Return a few samples for inspection
+feedback_items
+|> Enum.take(3)
+```
+
+---
+
+## Section 3: Configure AWS Bedrock
+
+We'll use AWS Bedrock to call Claude Sonnet 4.5 for relationship extraction.
+
+**Provide your AWS credentials below (or use environment variables):**
+
+```elixir
+# AWS Credential Inputs
+aws_access_key_input = Kino.Input.password("AWS Access Key ID:")
+aws_secret_key_input = Kino.Input.password("AWS Secret Access Key:")
+aws_region_input = Kino.Input.text("AWS Region:", default: "us-east-1")
+
+Kino.Layout.grid([aws_access_key_input, aws_secret_key_input, aws_region_input], columns: 1)
+```
+
+```elixir
+# Read AWS credentials from inputs or environment variables
+aws_access_key = Kino.Input.read(aws_access_key_input)
+aws_secret_key = Kino.Input.read(aws_secret_key_input)
+aws_region = Kino.Input.read(aws_region_input)
+
+# ReqLLM.put_key(:aws_bedrock, aws_config)
+# There is a bug with Bedrock provider in ReqLLM and have to use env vars
+System.put_env("AWS_ACCESS_KEY_ID", aws_access_key)
+System.put_env("AWS_SECRET_ACCESS_KEY", aws_secret_key)
+System.put_env("AWS_REGION", aws_region)
+```
+
+## Test Bedrock Connection
+
+Let's verify the Bedrock connection works:
+
+```elixir
+test_result =
+  ReqLLM.generate_text(
+    model,
+    "Respond with just the word 'SUCCESS' if you can read this message."
+  )
+
+case test_result do
+  {:ok, response} ->
+    IO.puts("✅ Bedrock connection successful!")
+    text = ReqLLM.Response.text(response)
+    IO.puts("Response: #{text}")
+    text
+
+  {:error, error} ->
+    IO.puts("❌ Bedrock connection failed")
+    error
+end
+```
+
+## Create Context Formatting Helper
+
+This function formats our product areas and features into a clear context string for the LLM:
+
+```elixir
+defmodule ContextFormatter do
+  def format_product_areas(product_areas) do
+    product_areas
+    |> Enum.map(fn area ->
+      """
+      - #{area.id}: #{area.name}
+        Description: #{area.description}
+        Common themes: #{area.example_themes}
+      """
+    end)
+    |> Enum.join("\n")
+  end
+
+  def format_features(features) do
+    features
+    |> Enum.map(fn feature ->
+      "- #{feature.id}: #{feature.name} (#{feature.product_area_id}) - #{feature.description}"
+    end)
+    |> Enum.join("\n")
+  end
+end
+
+# Test the formatter
+IO.puts("📦 PRODUCT AREAS:")
+IO.puts(ContextFormatter.format_product_areas(product_areas))
+IO.puts("\n🔧 FEATURES:")
+IO.puts(ContextFormatter.format_features(features))
+```
+
+---
+
+## Section 4: Agent 1 - Relationship Extraction
+
+This agent analyzes a feedback item and identifies:
+
+* Which product areas it relates to
+* Which features it mentions
+* The core theme/issue
+* Sentiment and urgency
+
+```elixir
+defmodule RelationshipExtractor do
+  @model "amazon-bedrock:us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+
+  # Schema for structured output
+  @output_schema [
+    product_areas: [type: {:list, :string}, required: true],
+    features: [type: {:list, :string}, required: true],
+    theme: [type: :string, required: true],
+    sentiment: [type: :string, required: true],
+    urgency: [type: :string, required: true]
+  ]
+
+  def build_prompt(feedback, product_areas, features) do
+    areas_context = ContextFormatter.format_product_areas(product_areas)
+    features_context = ContextFormatter.format_features(features)
+
+    # Build metadata context from available fields
+    metadata_lines = []
+
+    metadata_lines = if Map.has_key?(feedback.metadata, :satisfaction) do
+      ["Satisfaction: #{feedback.metadata.satisfaction}/5" | metadata_lines]
+    else
+      metadata_lines
+    end
+
+    metadata_lines = if Map.has_key?(feedback.metadata, :frequency) do
+      ["Frequency of use: #{feedback.metadata.frequency}" | metadata_lines]
+    else
+      metadata_lines
+    end
+
+    metadata_lines = if Map.has_key?(feedback.metadata, :nps_score) do
+      ["NPS Score: #{feedback.metadata.nps_score}/10" | metadata_lines]
+    else
+      metadata_lines
+    end
+
+    metadata_lines = if Map.has_key?(feedback.metadata, :plan_type) do
+      ["Plan Type: #{feedback.metadata.plan_type}" | metadata_lines]
+    else
+      metadata_lines
+    end
+
+    metadata_context = if Enum.empty?(metadata_lines) do
+      ""
+    else
+      Enum.reverse(metadata_lines) |> Enum.join("\n    ") |> then(&("\n    " <> &1))
+    end
+
+    """
+    You are analyzing customer feedback for an e-commerce platform.
+
+    Your task: Identify which product areas and features this feedback relates to.
+
+    PRODUCT AREAS:
+    #{areas_context}
+
+    FEATURES:
+    #{features_context}
+
+    FEEDBACK TO ANALYZE:
+    Source: #{feedback.source}#{metadata_context}
+
+    Text: "#{feedback.text}"
+
+    Analyze this feedback and identify:
+    - product_areas: Array of Product Area IDs (e.g., ["PA002", "PA007"])
+    - features: Array of Feature IDs that are mentioned or implied (e.g., ["F003", "F004"])
+    - theme: One clear sentence describing the main point
+    - sentiment: Based on the satisfaction score and text tone (positive|negative|neutral|mixed)
+    - urgency: How critical this issue is (low|medium|high)
+    """
+  end
+
+  def extract(feedback, product_areas, features) do
+    prompt = build_prompt(feedback, product_areas, features)
+
+    # Call Bedrock via ReqLLM with structured output
+    case ReqLLM.generate_object(@model, prompt, @output_schema) do
+      {:ok, response} ->
+        # Extract the validated object
+        object = ReqLLM.Response.object(response)
+        # Add source feedback ID for traceability
+        {:ok, Map.put(object, "feedback_id", feedback.id)}
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+end
+
+IO.puts("✅ Relationship Extractor module loaded")
+IO.puts("🤖 Model: #{model}")
+```
+
+## Test Agent 1 on a Single Feedback Item
+
+Let's process one feedback item and see the results:
+
+```elixir
+# Pick any feedback item to test
+test_feedback = Enum.at(feedback_items, 0)
+
+IO.puts("📋 Testing with feedback: #{test_feedback.id}")
+IO.puts("Source: #{test_feedback.source}")
+IO.puts("Text: #{String.slice(test_feedback.text, 0..200)}...")
+IO.puts("\n⏳ Processing with Agent 1...")
+
+# Extract relationships
+result = RelationshipExtractor.extract(test_feedback, product_areas, features)
+
+case result do
+  {:ok, data} ->
+    IO.puts("\n✅ RESULT:")
+    data
+
+  {:error, error} ->
+    IO.puts("\n❌ ERROR:")
+    error
+end
+```
+
+## Validate the Output
+
+Let's check if the extracted information makes sense:
+
+```elixir
+case result do
+  {:ok, data} ->
+    IO.puts("🎯 Relationship Extraction Results\n")
+    IO.puts("Feedback ID: #{data["feedback_id"]}")
+    IO.puts("\n📦 Product Areas:")
+
+    data["product_areas"]
+    |> Enum.each(fn area_id ->
+      area = Enum.find(product_areas, fn a -> a.id == area_id end)
+
+      if area do
+        IO.puts("  ✓ #{area_id}: #{area.name}")
+      else
+        IO.puts("  ✗ #{area_id}: (not found in taxonomy)")
+      end
+    end)
+
+    IO.puts("\n🔧 Features:")
+
+    data["features"]
+    |> Enum.each(fn feature_id ->
+      feature = Enum.find(features, fn f -> f.id == feature_id end)
+
+      if feature do
+        IO.puts("  ✓ #{feature_id}: #{feature.name}")
+      else
+        IO.puts("  ✗ #{feature_id}: (not found in taxonomy)")
+      end
+    end)
+
+    IO.puts("\n💡 Theme: #{data["theme"]}")
+    IO.puts("😊 Sentiment: #{data["sentiment"]}")
+    IO.puts("⚡ Urgency: #{data["urgency"]}")
+
+  {:error, _error} ->
+    IO.puts("❌ Cannot validate - extraction failed")
+end
+```
+
+---
+
+## Section 5: Batch Processing Configuration
+
+Configure how many feedback items to process:
+
+```elixir
+batch_size_input = Kino.Input.number("Batch Size (0 = process all):", default: 10)
+delay_ms_input = Kino.Input.number("Delay between requests (ms):", default: 1000)
+
+Kino.Layout.grid([batch_size_input, delay_ms_input], columns: 2)
+```
+
+## Process Batch with Progress Tracking
+
+```elixir
+batch_size = Kino.Input.read(batch_size_input)
+delay_ms = Kino.Input.read(delay_ms_input)
+
+# Determine how many items to process
+items_to_process = if batch_size == 0 do
+  IO.puts("📊 Processing ALL #{length(feedback_items)} feedback items\n")
+  feedback_items
+else
+  IO.puts("📊 Processing #{batch_size} feedback items\n")
+  Enum.take(feedback_items, batch_size)
+end
+
+total = length(items_to_process)
+start_time = System.monotonic_time(:second)
+
+enriched_feedback =
+  items_to_process
+  |> Enum.with_index(1)
+  |> Enum.map(fn {feedback, index} ->
+    # Calculate progress
+    progress = Float.round(index / total * 100, 1)
+    elapsed = System.monotonic_time(:second) - start_time
+    avg_time_per_item = if index > 1, do: elapsed / (index - 1), else: 0
+    remaining_items = total - index
+    eta_seconds = round(remaining_items * avg_time_per_item)
+    
+    IO.puts("[#{index}/#{total}] (#{progress}%) Processing: #{feedback.id} (#{feedback.source}) - ETA: #{eta_seconds}s")
+
+    result = case RelationshipExtractor.extract(feedback, product_areas, features) do
+      {:ok, extraction} ->
+        IO.puts("  ✓ Extracted: #{String.slice(extraction["theme"], 0..60)}...")
+        
+        # Merge original feedback with extraction results
+        Map.merge(feedback, %{
+          extracted_product_areas: extraction["product_areas"],
+          extracted_features: extraction["features"],
+          extracted_theme: extraction["theme"],
+          extracted_sentiment: extraction["sentiment"],
+          extracted_urgency: extraction["urgency"],
+          extraction_error: false
+        })
+
+      {:error, error} ->
+        IO.puts("  ⚠️  Error: #{inspect(error)}")
+
+        Map.merge(feedback, %{
+          extracted_product_areas: [],
+          extracted_features: [],
+          extracted_theme: "Error during extraction",
+          extracted_sentiment: "unknown",
+          extracted_urgency: "unknown",
+          extraction_error: true
+        })
+    end
+
+    # Delay to avoid rate limits (except for last item)
+    if index < total do
+      Process.sleep(delay_ms)
+    end
+    
+    result
+  end)
+
+end_time = System.monotonic_time(:second)
+total_time = end_time - start_time
+avg_time = Float.round(total_time / total, 2)
+
+IO.puts("\n" <> String.duplicate("━", 50))
+IO.puts("✅ Batch processing complete!")
+IO.puts("   Total items: #{total}")
+IO.puts("   Time taken: #{total_time} seconds")
+IO.puts("   Average per item: #{avg_time}s")
+IO.puts("   Success rate: #{length(Enum.filter(enriched_feedback, &(!&1.extraction_error)))} / #{total}")
+IO.puts(String.duplicate("━", 50) <> "\n")
+
+enriched_feedback
+```
+
+## Save/Load Enriched Feedback
+
+Save processed results to avoid reprocessing:
+
+```elixir
+defmodule FeedbackCache do
+  def save(enriched_feedback, base_directory, filename \\ "enriched_feedback.json") do
+    path = Path.join(base_directory, filename)
+
+    # Convert to JSON-friendly format
+    data = %{
+      processed_at: DateTime.utc_now() |> DateTime.to_iso8601(),
+      count: length(enriched_feedback),
+      items: enriched_feedback
+    }
+
+    json = JSON.encode_to_iodata!(data)
+    File.write!(path, json)
+
+    IO.puts("✅ Saved #{length(enriched_feedback)} items to #{filename}")
+    path
+  end
+
+  def load(base_directory, filename \\ "enriched_feedback.json") do
+    path = Path.join(base_directory, filename)
+
+    if File.exists?(path) do
+      case File.read(path) do
+        {:ok, content} ->
+          case JSON.decode(content) do
+            {:ok, data} ->
+              # Convert string keys back to atoms for consistency
+              items =
+                Enum.map(data["items"], fn item ->
+                  %{
+                    id: item["id"],
+                    source: item["source"],
+                    text: item["text"],
+                    metadata: item["metadata"],
+                    extracted_product_areas: item["extracted_product_areas"],
+                    extracted_features: item["extracted_features"],
+                    extracted_theme: item["extracted_theme"],
+                    extracted_sentiment: item["extracted_sentiment"],
+                    extracted_urgency: item["extracted_urgency"],
+                    extraction_error: item["extraction_error"]
+                  }
+                end)
+
+              IO.puts("✅ Loaded #{length(items)} items from #{filename}")
+              IO.puts("   Processed at: #{data["processed_at"]}")
+              {:ok, items}
+
+            {:error, error} ->
+              {:error, "Failed to parse JSON: #{inspect(error)}"}
+          end
+
+        {:error, error} ->
+          {:error, "Failed to read file: #{inspect(error)}"}
+      end
+    else
+      {:error, "File not found: #{path}"}
+    end
+  end
+end
+
+IO.puts("✅ Feedback cache module loaded")
+```
+
+## Save Current Batch (Optional)
+
+```elixir
+# Uncomment to save current enriched_feedback
+# FeedbackCache.save(enriched_feedback, base_directory, "enriched_feedback_#{DateTime.utc_now() |> DateTime.to_unix()}.json")
+```
+
+## Load Previously Processed Data (Optional)
+
+```elixir
+# Uncomment to load previously saved data instead of reprocessing
+enriched_feedback =
+  case FeedbackCache.load(base_directory, "enriched_feedback_1763028905.json") do
+    {:ok, loaded_feedback} ->
+      IO.puts("Using loaded data with #{length(enriched_feedback)} items")
+      loaded_feedback
+
+    {:error, error} ->
+      IO.puts("Could not load cache: #{error}")
+      IO.puts("Using current enriched_feedback")
+  end
+```
+
+## Parallel Processing (Optional - Faster for Large Batches)
+
+For large batches, parallel processing can be much faster. Note: This may hit rate limits.
+
+```elixir
+defmodule ParallelProcessor do
+  def process_batch(items, product_areas, features, opts \\ []) do
+    max_concurrency = Keyword.get(opts, :max_concurrency, 5)
+    timeout = Keyword.get(opts, :timeout, 30_000)
+    
+    total = length(items)
+    start_time = System.monotonic_time(:second)
+    
+    IO.puts("⚡ Processing #{total} items in parallel (max #{max_concurrency} concurrent)...\n")
+    
+    results =
+      items
+      |> Task.async_stream(
+        fn feedback ->
+          case RelationshipExtractor.extract(feedback, product_areas, features) do
+            {:ok, extraction} ->
+              {:ok, Map.merge(feedback, %{
+                extracted_product_areas: extraction["product_areas"],
+                extracted_features: extraction["features"],
+                extracted_theme: extraction["theme"],
+                extracted_sentiment: extraction["sentiment"],
+                extracted_urgency: extraction["urgency"],
+                extraction_error: false
+              })}
+            
+            {:error, error} ->
+              {:error, Map.merge(feedback, %{
+                extracted_product_areas: [],
+                extracted_features: [],
+                extracted_theme: "Error during extraction",
+                extracted_sentiment: "unknown",
+                extracted_urgency: "unknown",
+                extraction_error: true
+              }), error}
+          end
+        end,
+        max_concurrency: max_concurrency,
+        timeout: timeout,
+        ordered: true
+      )
+      |> Enum.with_index(1)
+      |> Enum.map(fn {result, index} ->
+        progress = Float.round(index / total * 100, 1)
+        IO.write("\r[#{index}/#{total}] (#{progress}%) completed")
+        
+        case result do
+          {:ok, {:ok, item}} -> item
+          {:ok, {:error, item, _error}} -> item
+          {:exit, reason} ->
+            IO.puts("\n  ⚠️  Task #{index} timed out or crashed: #{inspect(reason)}")
+            Enum.at(items, index - 1)
+            |> Map.merge(%{
+              extracted_product_areas: [],
+              extracted_features: [],
+              extracted_theme: "Processing timeout",
+              extracted_sentiment: "unknown",
+              extracted_urgency: "unknown",
+              extraction_error: true
+            })
+        end
+      end)
+    
+    end_time = System.monotonic_time(:second)
+    total_time = end_time - start_time
+    avg_time = Float.round(total_time / total, 2)
+    success_count = length(Enum.filter(results, &(!&1.extraction_error)))
+    
+    IO.puts("\n" <> String.duplicate("━", 50))
+    IO.puts("⚡ Parallel processing complete!")
+    IO.puts("   Total items: #{total}")
+    IO.puts("   Time taken: #{total_time} seconds")
+    IO.puts("   Average per item: #{avg_time}s")
+    IO.puts("   Success rate: #{success_count} / #{total}")
+    IO.puts("   Speedup: ~#{Float.round(max_concurrency * avg_time, 1)}x faster than sequential")
+    IO.puts(String.duplicate("━", 50) <> "\n")
+    
+    results
+  end
+end
+
+IO.puts("✅ Parallel processor module loaded")
+```
+
+## Run Parallel Processing (Uncomment to Use)
+
+```elixir
+# Uncomment to use parallel processing instead of sequential
+# WARNING: May hit rate limits with high concurrency
+# 
+# parallel_batch_size = 20
+# items_for_parallel = Enum.take(feedback_items, parallel_batch_size)
+# 
+# enriched_feedback = ParallelProcessor.process_batch(
+#   items_for_parallel,
+#   product_areas,
+#   features,
+#   max_concurrency: 5,  # Adjust based on rate limits
+#   timeout: 30_000       # 30 seconds per item
+# )
+```
+
+---
+
+## View Enriched Feedback
+
+```elixir
+enriched_df =
+  enriched_feedback
+  |> Enum.map(fn item ->
+    %{
+      id: item.id,
+      source: item.source,
+      sentiment: item.extracted_sentiment,
+      urgency: item.extracted_urgency,
+      theme: item.extracted_theme,
+      product_areas: Enum.join(item.extracted_product_areas, ", "),
+      features: Enum.join(item.extracted_features, ", "),
+      error: item.extraction_error
+    }
+  end)
+  |> DF.new()
+
+enriched_df
+```
+
+---
+
+## Section 6: Agent 2 - Clustering
+
+Now let's group similar feedback into thematic clusters to identify patterns across all sources.
+
+```elixir
+defmodule ThemeClusterer do
+  @model "amazon-bedrock:us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+
+  # Schema for structured output - wrap clusters in an object for Bedrock compatibility
+  @output_schema [
+    clusters: [
+      type: {:list, :map},
+      required: true
+    ]
+  ]
+
+  def build_clustering_prompt(feedback_themes) do
+    themes_list = 
+      feedback_themes
+      |> Enum.with_index(1)
+      |> Enum.map(fn {{id, theme, source}, idx} ->
+        "#{idx}. [#{id}] (#{source}) - #{theme}"
+      end)
+      |> Enum.join("\n")
+
+    """
+    You are analyzing customer feedback themes to identify common patterns and group them into clusters.
+
+    Your task: Group these feedback themes into meaningful clusters based on similarity.
+
+    FEEDBACK THEMES:
+    #{themes_list}
+
+    Analyze these themes and create clusters of similar feedback.
+
+    Output structure:
+    - clusters: Array of cluster objects, each containing:
+      - cluster_name: Brief descriptive name for this cluster
+      - description: What this cluster represents
+      - feedback_ids: Array of feedback IDs in this cluster
+
+    Guidelines:
+    - Create 5-10 clusters maximum
+    - Each cluster should contain at least 2 feedback items
+    - Cluster names should be clear and actionable (e.g., "Arabic localization issues", "Pricing concerns")
+    - Group by topic/theme similarity, not just keywords
+    - A feedback item should only appear in ONE cluster
+    - If a theme doesn't fit any cluster, create a new cluster or put it in "Miscellaneous"
+    """
+  end
+
+  def cluster_themes(enriched_feedback) do
+    # Extract themes with IDs
+    feedback_themes = 
+      enriched_feedback
+      |> Enum.map(fn item -> 
+        {item.id, item.extracted_theme, item.source}
+      end)
+
+    prompt = build_clustering_prompt(feedback_themes)
+
+    IO.puts("🔄 Sending #{length(feedback_themes)} themes to LLM for clustering...")
+
+    case ReqLLM.generate_object(@model, prompt, @output_schema) do
+      {:ok, response} ->
+        # Extract the validated object
+        object = ReqLLM.Response.object(response)
+        {:ok, object["clusters"]}
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  def enrich_clusters(clusters, enriched_feedback) do
+    # Create lookup map
+    feedback_map = Map.new(enriched_feedback, fn item -> {item.id, item} end)
+
+    Enum.map(clusters, fn cluster ->
+      # Get all feedback items in this cluster
+      cluster_items = 
+        cluster["feedback_ids"]
+        |> Enum.map(fn id -> Map.get(feedback_map, id) end)
+        |> Enum.reject(&is_nil/1)
+
+      # Aggregate metadata
+      product_areas = 
+        cluster_items
+        |> Enum.flat_map(& &1.extracted_product_areas)
+        |> Enum.frequencies()
+        |> Enum.sort_by(fn {_area, count} -> count end, :desc)
+        |> Enum.take(3)
+        |> Enum.map(fn {area, _count} -> area end)
+
+      features = 
+        cluster_items
+        |> Enum.flat_map(& &1.extracted_features)
+        |> Enum.frequencies()
+        |> Enum.sort_by(fn {_feature, count} -> count end, :desc)
+        |> Enum.take(5)
+        |> Enum.map(fn {feature, _count} -> feature end)
+
+      sentiment_dist = 
+        cluster_items
+        |> Enum.map(& &1.extracted_sentiment)
+        |> Enum.frequencies()
+
+      urgency_dist = 
+        cluster_items
+        |> Enum.map(& &1.extracted_urgency)
+        |> Enum.frequencies()
+
+      source_dist = 
+        cluster_items
+        |> Enum.map(& &1.source)
+        |> Enum.frequencies()
+
+      %{
+        cluster_name: cluster["cluster_name"],
+        description: cluster["description"],
+        feedback_ids: cluster["feedback_ids"],
+        feedback_count: length(cluster_items),
+        top_product_areas: product_areas,
+        top_features: features,
+        sentiment_distribution: sentiment_dist,
+        urgency_distribution: urgency_dist,
+        source_distribution: source_dist,
+        sample_themes: cluster_items |> Enum.take(3) |> Enum.map(& &1.extracted_theme)
+      }
+    end)
+  end
+end
+
+IO.puts("✅ Theme Clusterer module loaded")
+```
+
+## Run Clustering on Enriched Feedback
+
+```elixir
+# Only cluster successfully processed feedback
+successful_feedback = Enum.filter(enriched_feedback, fn f -> !f.extraction_error end)
+
+IO.puts("📊 Clustering #{length(successful_feedback)} feedback items...\n")
+
+clustering_result = ThemeClusterer.cluster_themes(successful_feedback)
+
+case clustering_result do
+  {:ok, clusters} ->
+    IO.puts("✅ Created #{length(clusters)} clusters\n")
+    clusters
+
+  {:error, error} ->
+    IO.puts("❌ Clustering failed: #{inspect(error)}")
+    []
+end
+```
+
+## Enrich Clusters with Metadata
+
+```elixir
+enriched_clusters =
+  case clustering_result do
+    {:ok, raw_clusters} ->
+      enriched_clusters = ThemeClusterer.enrich_clusters(raw_clusters, successful_feedback)
+
+      IO.puts("🎯 Enriched Clusters:\n")
+
+      enriched_clusters
+      |> Enum.with_index(1)
+      |> Enum.each(fn {cluster, idx} ->
+        IO.puts("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        IO.puts("#{idx}. #{cluster.cluster_name}")
+        IO.puts("   Description: #{cluster.description}")
+        IO.puts("   Feedback count: #{cluster.feedback_count}")
+        IO.puts("   Top product areas: #{Enum.join(cluster.top_product_areas, ", ")}")
+        IO.puts("   Top features: #{Enum.join(cluster.top_features, ", ")}")
+        IO.puts("   Sentiment: #{inspect(cluster.sentiment_distribution)}")
+        IO.puts("   Urgency: #{inspect(cluster.urgency_distribution)}")
+        IO.puts("   Sources: #{inspect(cluster.source_distribution)}")
+        IO.puts("")
+      end)
+
+      enriched_clusters
+
+    {:error, _error} ->
+      IO.puts("⚠️  Cannot enrich clusters - clustering failed")
+      []
+  end
+```
+
+## View Clusters as DataFrame
+
+```elixir
+case clustering_result do
+  {:ok, _clusters} ->
+    clusters_df =
+      enriched_clusters
+      |> Enum.map(fn cluster ->
+        %{
+          cluster_name: cluster.cluster_name,
+          feedback_count: cluster.feedback_count,
+          product_areas: Enum.join(cluster.top_product_areas, ", "),
+          features: Enum.join(cluster.top_features, ", "),
+          dominant_sentiment: cluster.sentiment_distribution |> Enum.max_by(fn {_k, v} -> v end) |> elem(0),
+          dominant_urgency: cluster.urgency_distribution |> Enum.max_by(fn {_k, v} -> v end) |> elem(0),
+          sources: Map.keys(cluster.source_distribution) |> length()
+        }
+      end)
+      |> DF.new()
+    
+    clusters_df
+
+  {:error, _error} ->
+    IO.puts("⚠️  No clusters to display")
+    nil
+end
+```
+
+---
+
+## Section 7: Agent 3 - Insight Generation
+
+Now let's generate clear, actionable insights from our clusters with supporting evidence.
+
+```elixir
+defmodule InsightGenerator do
+  @model "amazon-bedrock:us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+
+  # Schema for structured insight output
+  @output_schema [
+    insight_title: [type: :string, required: true],
+    insight_summary: [type: :string, required: true],
+    impact: [type: :string, required: true],
+    affected_users: [type: :string, required: true],
+    recommended_action: [type: :string, required: true],
+    confidence_score: [type: :float, required: true],
+    priority: [type: :string, required: true]
+  ]
+
+  def build_insight_prompt(cluster, enriched_feedback, product_areas, features) do
+    # Get feedback items for this cluster
+    feedback_map = Map.new(enriched_feedback, fn item -> {item.id, item} end)
+    
+    cluster_items = 
+      cluster.feedback_ids
+      |> Enum.map(fn id -> Map.get(feedback_map, id) end)
+      |> Enum.reject(&is_nil/1)
+    
+    # Get sample quotes from cluster
+    sample_quotes = 
+      cluster_items
+      |> Enum.take(5)
+      |> Enum.map(fn item ->
+        text = String.slice(item.text, 0..150)
+        "- [#{item.id}] (#{item.source}): \"#{text}...\""
+      end)
+      |> Enum.join("\n")
+    
+    # Get product area names
+    area_names = 
+      cluster.top_product_areas
+      |> Enum.map(fn area_id ->
+        area = Enum.find(product_areas, fn a -> a.id == area_id end)
+        if area, do: "#{area_id}: #{area.name}", else: area_id
+      end)
+      |> Enum.join(", ")
+    
+    # Get feature names
+    feature_names = 
+      cluster.top_features
+      |> Enum.map(fn feature_id ->
+        feature = Enum.find(features, fn f -> f.id == feature_id end)
+        if feature, do: "#{feature_id}: #{feature.name}", else: feature_id
+      end)
+      |> Enum.join(", ")
+
+    """
+    You are a product insights analyst creating actionable insights from customer feedback.
+
+    CLUSTER INFORMATION:
+    Cluster Name: #{cluster.cluster_name}
+    Description: #{cluster.description}
+    Feedback Count: #{cluster.feedback_count} items
+    
+    AFFECTED AREAS:
+    Product Areas: #{area_names}
+    Features: #{feature_names}
+    
+    SENTIMENT BREAKDOWN:
+    #{inspect(cluster.sentiment_distribution)}
+    
+    URGENCY BREAKDOWN:
+    #{inspect(cluster.urgency_distribution)}
+    
+    SOURCE BREAKDOWN:
+    #{inspect(cluster.source_distribution)}
+    
+    SAMPLE FEEDBACK:
+    #{sample_quotes}
+
+    Generate a clear, actionable insight based on this cluster.
+
+    Guidelines:
+    - insight_title: Clear, concise title (e.g., "Arabic Localization Gaps Causing Customer Frustration")
+    - insight_summary: 2-3 sentences explaining the issue, its scope, and impact
+    - impact: What's the business impact? (e.g., "Causing churn in MENA region", "Blocking Pro tier adoption")
+    - affected_users: Who is affected? (e.g., "Arabic-speaking merchants, primarily in UAE and Saudi Arabia")
+    - recommended_action: Specific, actionable next step (e.g., "Implement RTL layout support and hire Arabic UX writer")
+    - confidence_score: Float between 0.0-1.0 based on feedback volume, consistency, and source diversity (more sources = higher confidence)
+    - priority: "critical" (high urgency + negative sentiment + high volume), "high" (2 of 3), "medium" (1 of 3), "low" (nice to have)
+
+    Consider:
+    - Volume: #{cluster.feedback_count} mentions
+    - Source diversity: #{map_size(cluster.source_distribution)} different sources
+    - Sentiment: Is it mostly negative? That increases priority
+    - Urgency: Are customers saying it's urgent? That increases priority
+    """
+  end
+
+  def generate_insight(cluster, enriched_feedback, product_areas, features) do
+    prompt = build_insight_prompt(cluster, enriched_feedback, product_areas, features)
+
+    case ReqLLM.generate_object(@model, prompt, @output_schema) do
+      {:ok, response} ->
+        insight = ReqLLM.Response.object(response)
+        
+        # Add cluster metadata
+        enriched_insight = Map.merge(insight, %{
+          "cluster_id" => cluster.cluster_name,
+          "feedback_count" => cluster.feedback_count,
+          "feedback_ids" => cluster.feedback_ids,
+          "product_areas" => cluster.top_product_areas,
+          "features" => cluster.top_features,
+          "sentiment_distribution" => cluster.sentiment_distribution,
+          "urgency_distribution" => cluster.urgency_distribution,
+          "source_distribution" => cluster.source_distribution
+        })
+        
+        {:ok, enriched_insight}
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  def generate_all_insights(clusters, enriched_feedback, product_areas, features) do
+    total = length(clusters)
+    IO.puts("🔄 Generating insights for #{total} clusters...\n")
+
+    clusters
+    |> Enum.with_index(1)
+    |> Enum.map(fn {cluster, index} ->
+      IO.puts("[#{index}/#{total}] Generating insight for: #{cluster.cluster_name}")
+
+      case generate_insight(cluster, enriched_feedback, product_areas, features) do
+        {:ok, insight} ->
+          IO.puts("  ✓ #{insight["insight_title"]}")
+          {:ok, insight}
+
+        {:error, error} ->
+          IO.puts("  ⚠️  Error: #{inspect(error)}")
+          {:error, cluster.cluster_name, error}
+      end
+      |> tap(fn _ -> Process.sleep(1000) end)
+    end)
+  end
+end
+
+IO.puts("✅ Insight Generator module loaded")
+```
+
+## Generate Insights from Clusters
+
+```elixir
+insights =
+  case clustering_result do
+    {:ok, _clusters} ->
+      IO.puts("📊 Generating insights from #{length(enriched_clusters)} clusters...\n")
+
+      insight_results =
+        InsightGenerator.generate_all_insights(
+          enriched_clusters,
+          successful_feedback,
+          product_areas,
+          features
+        )
+
+      # Extract successful insights
+      insights =
+        insight_results
+        |> Enum.filter(fn result ->
+          case result do
+            {:ok, _} -> true
+            _ -> false
+          end
+        end)
+        |> Enum.map(fn {:ok, insight} -> insight end)
+
+      IO.puts("\n✅ Generated #{length(insights)} insights")
+
+      insights
+
+    {:error, _error} ->
+      IO.puts("⚠️  Cannot generate insights - clustering failed")
+      []
+  end
+```
+
+## View Insights Summary
+
+```elixir
+if length(insights) > 0 do
+  IO.puts("🎯 GENERATED INSIGHTS:\n")
+  IO.puts(String.duplicate("━", 80))
+  
+  insights
+  |> Enum.sort_by(fn insight -> 
+    priority_order = %{"critical" => 1, "high" => 2, "medium" => 3, "low" => 4}
+    Map.get(priority_order, insight["priority"], 5)
+  end)
+  |> Enum.with_index(1)
+  |> Enum.each(fn {insight, idx} ->
+    priority_emoji = case insight["priority"] do
+      "critical" -> "🔴"
+      "high" -> "🟠"
+      "medium" -> "🟡"
+      "low" -> "🟢"
+      _ -> "⚪"
+    end
+    
+    IO.puts("\n#{idx}. #{priority_emoji} #{insight["insight_title"]}")
+    IO.puts("   Priority: #{String.upcase(insight["priority"])} | Confidence: #{Float.round(insight["confidence_score"] * 100, 0)}%")
+    IO.puts("   Evidence: #{insight["feedback_count"]} feedback items across #{map_size(insight["source_distribution"])} sources")
+    IO.puts("")
+    IO.puts("   📝 Summary:")
+    IO.puts("   #{insight["insight_summary"]}")
+    IO.puts("")
+    IO.puts("   💥 Impact:")
+    IO.puts("   #{insight["impact"]}")
+    IO.puts("")
+    IO.puts("   👥 Affected Users:")
+    IO.puts("   #{insight["affected_users"]}")
+    IO.puts("")
+    IO.puts("   ✅ Recommended Action:")
+    IO.puts("   #{insight["recommended_action"]}")
+    IO.puts("")
+    IO.puts("   📦 Product Areas: #{Enum.join(insight["product_areas"], ", ")}")
+    IO.puts("   🔧 Features: #{Enum.join(insight["features"], ", ")}")
+    IO.puts(String.duplicate("─", 80))
+  end)
+  
+  insights
+else
+  IO.puts("⚠️  No insights to display")
+  []
+end
+```
+
+## View Insights as DataFrame
+
+```elixir
+if length(insights) > 0 do
+  insights_df =
+    insights
+    |> Enum.map(fn insight ->
+      %{
+        title: insight["insight_title"],
+        priority: insight["priority"],
+        confidence: Float.round(insight["confidence_score"], 2),
+        feedback_count: insight["feedback_count"],
+        sources: map_size(insight["source_distribution"]),
+        impact: String.slice(insight["impact"], 0..60) <> "...",
+        action: String.slice(insight["recommended_action"], 0..60) <> "..."
+      }
+    end)
+    |> DF.new()
+  
+  insights_df
+else
+  IO.puts("⚠️  No insights to display")
+  nil
+end
+```
+
+## Export Insights to JSON
+
+```elixir
+defmodule InsightExporter do
+  def export_insights(insights, base_directory, filename \\ "insights_report.json") do
+    path = Path.join(base_directory, filename)
+    
+    report = %{
+      generated_at: DateTime.utc_now() |> DateTime.to_iso8601(),
+      total_insights: length(insights),
+      insights: insights,
+      summary: %{
+        by_priority: Enum.frequencies_by(insights, & &1["priority"]),
+        avg_confidence: (Enum.map(insights, & &1["confidence_score"]) |> Enum.sum()) / length(insights),
+        total_feedback_items: Enum.map(insights, & &1["feedback_count"]) |> Enum.sum()
+      }
+    }
+    
+    json = JSON.encode_to_iodata!(report)
+    File.write!(path, json)
+    
+    IO.puts("✅ Exported #{length(insights)} insights to #{filename}")
+    path
+  end
+end
+```
+
+```elixir
+# Uncomment to export
+# if length(insights) > 0 do
+#   InsightExporter.export_insights(insights, base_directory)
+# end
+```
+
+---
+
+## Section 8: Visualizations
+
+Create visual dashboards for insights analysis.
+
+```elixir
+# Check if we have insights to visualize
+has_insights = length(insights) > 0
+
+if has_insights do
+  IO.puts("📊 Creating visualizations for #{length(insights)} insights...")
+else
+  IO.puts("⚠️  No insights available for visualization")
+end
+```
+
+## 1. Urgency vs Sentiment Matrix (Bubble Chart)
+
+Shows strategic positioning - which quadrant each insight falls into for decision-making.
+
+```elixir
+if has_insights do
+  # Prepare data for urgency vs sentiment matrix
+  matrix_data = 
+    insights
+    |> Enum.flat_map(fn insight ->
+      # Get urgency distribution
+      urgency_dist = insight["urgency_distribution"]
+      total_urgency = Enum.sum(Map.values(urgency_dist))
+      
+      # Calculate urgency score (0-100)
+      urgency_score = 
+        (Map.get(urgency_dist, "high", 0) * 100 + 
+         Map.get(urgency_dist, "medium", 0) * 50 + 
+         Map.get(urgency_dist, "low", 0) * 0) / max(total_urgency, 1)
+      
+      # Get sentiment distribution
+      sentiment_dist = insight["sentiment_distribution"]
+      total_sentiment = Enum.sum(Map.values(sentiment_dist))
+      
+      # Calculate sentiment score (-100 to 100, negative is bad)
+      sentiment_score = 
+        (Map.get(sentiment_dist, "positive", 0) * 100 + 
+         Map.get(sentiment_dist, "mixed", 0) * 0 + 
+         Map.get(sentiment_dist, "neutral", 0) * 0 +
+         Map.get(sentiment_dist, "negative", 0) * -100) / max(total_sentiment, 1)
+      
+      priority_color = case insight["priority"] do
+        "critical" -> "#dc2626"
+        "high" -> "#ea580c"
+        "medium" -> "#fbbf24"
+        "low" -> "#22c55e"
+        _ -> "#94a3b8"
+      end
+      
+      [%{
+        "title" => String.slice(insight["insight_title"], 0..40) <> "...",
+        "urgency_score" => Float.round(urgency_score, 1),
+        "sentiment_score" => Float.round(sentiment_score, 1),
+        "feedback_count" => insight["feedback_count"],
+        "priority" => insight["priority"],
+        "color" => priority_color,
+        "confidence" => Float.round(insight["confidence_score"] * 100, 0)
+      }]
+    end)
+  
+  VegaLite.new(width: 700, height: 500, title: "Strategic Insight Matrix: Urgency vs Sentiment")
+  |> VegaLite.data_from_values(matrix_data)
+  |> VegaLite.mark(:circle, tooltip: true)
+  |> VegaLite.encode_field(:x, "sentiment_score", 
+      type: :quantitative, 
+      title: "Sentiment (Negative ← → Positive)",
+      scale: [domain: [-100, 100]],
+      axis: [grid: true]
+    )
+  |> VegaLite.encode_field(:y, "urgency_score", 
+      type: :quantitative, 
+      title: "Urgency Score (Low ← → High)",
+      scale: [domain: [0, 100]],
+      axis: [grid: true]
+    )
+  |> VegaLite.encode_field(:size, "feedback_count",
+      type: :quantitative,
+      title: "Feedback Count",
+      scale: [range: [100, 2000]]
+    )
+  |> VegaLite.encode_field(:color, "color",
+      type: :nominal,
+      scale: nil,
+      legend: nil
+    )
+  |> VegaLite.encode(:tooltip, [
+      [field: "title", type: :nominal, title: "Insight"],
+      [field: "priority", type: :nominal, title: "Priority"],
+      [field: "feedback_count", type: :quantitative, title: "Feedback Count"],
+      [field: "confidence", type: :quantitative, title: "Confidence %"],
+      [field: "urgency_score", type: :quantitative, title: "Urgency Score"],
+      [field: "sentiment_score", type: :quantitative, title: "Sentiment Score"]
+    ])
+else
+  IO.puts("⚠️  No insights to visualize")
+  nil
+end
+```
+
+### Matrix Interpretation Guide
+
+```elixir
+if has_insights do
+  IO.puts("""
+  📍 QUADRANT GUIDE:
+  
+  Top-Right (High Urgency + Positive Sentiment):
+    → Opportunity to capitalize on momentum
+    → Quick wins that customers are asking for
+    
+  Top-Left (High Urgency + Negative Sentiment):
+    → 🔥 EMERGENCY - Fix immediately
+    → Customers are frustrated AND it's urgent
+    
+  Bottom-Right (Low Urgency + Positive Sentiment):
+    → Enhancement opportunities
+    → Nice-to-have improvements
+    
+  Bottom-Left (Low Urgency + Negative Sentiment):
+    → Roadmap consideration
+    → Address when capacity allows
+  
+  💡 Bubble size = feedback volume (bigger = more mentions)
+  🎨 Color = priority (red = critical, orange = high, yellow = medium, green = low)
+  """)
+end
+```
+
+## 2. Confidence vs Feedback Volume (Scatter Plot)
+
+Quality assurance view - validate that high-priority insights have strong evidence.
+
+```elixir
+if has_insights do
+  scatter_data = 
+    insights
+    |> Enum.map(fn insight ->
+      priority_color = case insight["priority"] do
+        "critical" -> "#dc2626"
+        "high" -> "#ea580c"
+        "medium" -> "#fbbf24"
+        "low" -> "#22c55e"
+        _ -> "#94a3b8"
+      end
+      
+      %{
+        "title" => String.slice(insight["insight_title"], 0..40) <> "...",
+        "confidence" => Float.round(insight["confidence_score"] * 100, 1),
+        "feedback_count" => insight["feedback_count"],
+        "priority" => insight["priority"],
+        "color" => priority_color,
+        "sources" => map_size(insight["source_distribution"])
+      }
+    end)
+  
+  VegaLite.new(width: 700, height: 500, title: "Evidence Strength: Confidence vs Feedback Volume")
+  |> VegaLite.data_from_values(scatter_data)
+  |> VegaLite.mark(:point, size: 200, tooltip: true)
+  |> VegaLite.encode_field(:x, "feedback_count", 
+      type: :quantitative, 
+      title: "Feedback Count",
+      scale: [zero: true]
+    )
+  |> VegaLite.encode_field(:y, "confidence", 
+      type: :quantitative, 
+      title: "Confidence Score (%)",
+      scale: [domain: [0, 100]]
+    )
+  |> VegaLite.encode_field(:color, "color",
+      type: :nominal,
+      scale: nil,
+      legend: nil
+    )
+  |> VegaLite.encode(:tooltip, [
+      [field: "title", type: :nominal, title: "Insight"],
+      [field: "priority", type: :nominal, title: "Priority"],
+      [field: "confidence", type: :quantitative, title: "Confidence %"],
+      [field: "feedback_count", type: :quantitative, title: "Feedback Count"],
+      [field: "sources", type: :quantitative, title: "Source Count"]
+    ])
+else
+  IO.puts("⚠️  No insights to visualize")
+  nil
+end
+```
+
+### Confidence Analysis
+
+```elixir
+if has_insights do
+  # Find outliers
+  high_priority_low_confidence = 
+    insights
+    |> Enum.filter(fn insight ->
+      insight["priority"] in ["critical", "high"] and insight["confidence_score"] < 0.6
+    end)
+  
+  low_volume_high_confidence = 
+    insights
+    |> Enum.filter(fn insight ->
+      insight["feedback_count"] < 5 and insight["confidence_score"] > 0.8
+    end)
+  
+  IO.puts("🔍 CONFIDENCE ANALYSIS:\n")
+  
+  if length(high_priority_low_confidence) > 0 do
+    IO.puts("⚠️  High Priority but Low Confidence (#{length(high_priority_low_confidence)}):")
+    high_priority_low_confidence
+    |> Enum.each(fn insight ->
+      IO.puts("   - #{insight["insight_title"]} (#{Float.round(insight["confidence_score"] * 100, 0)}%)")
+    end)
+    IO.puts("   → Recommendation: Validate before acting\n")
+  end
+  
+  if length(low_volume_high_confidence) > 0 do
+    IO.puts("🤔 Low Volume but High Confidence (#{length(low_volume_high_confidence)}):")
+    low_volume_high_confidence
+    |> Enum.each(fn insight ->
+      IO.puts("   - #{insight["insight_title"]} (#{insight["feedback_count"]} items)")
+    end)
+    IO.puts("   → Recommendation: Check if sample is representative\n")
+  end
+  
+  if length(high_priority_low_confidence) == 0 and length(low_volume_high_confidence) == 0 do
+    IO.puts("✅ All insights have appropriate confidence levels for their priority")
+  end
+end
+```
+
+## 3. Product Area Impact (Bar Chart)
+
+Shows where to focus team resources based on insight concentration.
+
+```elixir
+if has_insights do
+  # Get product area names
+  area_lookup = Map.new(product_areas, fn area -> {area.id, area.name} end)
+  
+  # Aggregate insights by product area
+  area_impact = 
+    insights
+    |> Enum.flat_map(fn insight ->
+      insight["product_areas"]
+      |> Enum.map(fn area_id ->
+        {area_id, %{
+          feedback_count: insight["feedback_count"],
+          priority_score: case insight["priority"] do
+            "critical" -> 4
+            "high" -> 3
+            "medium" -> 2
+            "low" -> 1
+            _ -> 0
+          end
+        }}
+      end)
+    end)
+    |> Enum.group_by(fn {area_id, _} -> area_id end, fn {_, data} -> data end)
+    |> Enum.map(fn {area_id, items} ->
+      insight_count = length(items)
+      total_feedback = Enum.sum(Enum.map(items, & &1.feedback_count))
+      avg_priority = Float.round(Enum.sum(Enum.map(items, & &1.priority_score)) / insight_count, 1)
+      
+      %{
+        "area_id" => area_id,
+        "area_name" => Map.get(area_lookup, area_id, area_id),
+        "insight_count" => insight_count,
+        "total_feedback" => total_feedback,
+        "avg_priority" => avg_priority
+      }
+    end)
+    |> Enum.sort_by(& &1["insight_count"], :desc)
+  
+  VegaLite.new(width: 700, height: 400, title: "Product Area Impact (Insight Count)")
+  |> VegaLite.data_from_values(area_impact)
+  |> VegaLite.mark(:bar, tooltip: true, color: "#3b82f6")
+  |> VegaLite.encode_field(:x, "insight_count", 
+      type: :quantitative, 
+      title: "Number of Insights"
+    )
+  |> VegaLite.encode_field(:y, "area_name", 
+      type: :nominal, 
+      title: "Product Area",
+      sort: [field: "insight_count", order: "descending"]
+    )
+  |> VegaLite.encode(:tooltip, [
+      [field: "area_name", type: :nominal, title: "Product Area"],
+      [field: "insight_count", type: :quantitative, title: "Insights"],
+      [field: "total_feedback", type: :quantitative, title: "Total Feedback Items"],
+      [field: "avg_priority", type: :quantitative, title: "Avg Priority Score"]
+    ])
+else
+  IO.puts("⚠️  No insights to visualize")
+  nil
+end
+```
+
+### Resource Allocation Recommendations
+
+```elixir
+if has_insights do
+  # Get product area names
+  area_lookup = Map.new(product_areas, fn area -> {area.id, area.name} end)
+  
+  # Calculate area concentration
+  area_counts = 
+    insights
+    |> Enum.flat_map(& &1["product_areas"])
+    |> Enum.frequencies()
+  
+  total_mentions = Enum.sum(Map.values(area_counts))
+  
+  area_percentages = 
+    area_counts
+    |> Enum.map(fn {area_id, count} ->
+      {area_id, Float.round(count / total_mentions * 100, 1)}
+    end)
+    |> Enum.sort_by(fn {_, pct} -> pct end, :desc)
+  
+  IO.puts("🎯 RESOURCE ALLOCATION RECOMMENDATIONS:\n")
+  
+  area_percentages
+  |> Enum.take(3)
+  |> Enum.each(fn {area_id, pct} ->
+    area_name = Map.get(area_lookup, area_id, area_id)
+    recommendation = cond do
+      pct > 40 -> "🔥 Hot spot - dedicate squad capacity"
+      pct > 25 -> "⚡ Major focus area"
+      pct > 15 -> "📌 Significant attention needed"
+      true -> "👀 Monitor"
+    end
+    IO.puts("   #{area_name}: #{pct}% - #{recommendation}")
+  end)
+  
+  IO.puts("\n💡 If insights are concentrated (>40% in one area), consider dedicated team allocation")
+  IO.puts("💡 If insights are spread evenly, consider cross-functional approach")
+end
+```
+
+---
+
+## Summary Statistics
+
+```elixir
+# Filter out errors
+successful_feedback = Enum.filter(enriched_feedback, fn f -> !f.extraction_error end)
+
+IO.puts("📊 Successfully processed: #{length(successful_feedback)}/#{length(enriched_feedback)}\n")
+
+# Count by source
+source_counts =
+  successful_feedback
+  |> Enum.group_by(& &1.source)
+  |> Enum.map(fn {source, items} -> {source, length(items)} end)
+  |> Enum.sort_by(fn {_source, count} -> count end, :desc)
+
+IO.puts("📁 Source Distribution:")
+
+source_counts
+|> Enum.each(fn {source, count} ->
+  IO.puts("  #{source}: #{count}")
+end)
+
+# Count by sentiment
+sentiment_counts =
+  successful_feedback
+  |> Enum.group_by(& &1.extracted_sentiment)
+  |> Enum.map(fn {sentiment, items} -> {sentiment, length(items)} end)
+  |> Enum.sort_by(fn {_sentiment, count} -> count end, :desc)
+
+IO.puts("😊 Sentiment Distribution:")
+
+sentiment_counts
+|> Enum.each(fn {sentiment, count} ->
+  IO.puts("  #{sentiment}: #{count}")
+end)
+
+# Count by urgency
+urgency_counts =
+  successful_feedback
+  |> Enum.group_by(& &1.extracted_urgency)
+  |> Enum.map(fn {urgency, items} -> {urgency, length(items)} end)
+  |> Enum.sort_by(fn {_urgency, count} -> count end, :desc)
+
+IO.puts("\n⚡ Urgency Distribution:")
+
+urgency_counts
+|> Enum.each(fn {urgency, count} ->
+  IO.puts("  #{urgency}: #{count}")
+end)
+
+# Most common product areas
+product_area_counts =
+  successful_feedback
+  |> Enum.flat_map(& &1.extracted_product_areas)
+  |> Enum.frequencies()
+  |> Enum.sort_by(fn {_area, count} -> count end, :desc)
+
+IO.puts("\n📦 Product Area Frequency:")
+
+product_area_counts
+|> Enum.each(fn {area_id, count} ->
+  area = Enum.find(product_areas, fn a -> a.id == area_id end)
+  area_name = if area, do: area.name, else: "Unknown"
+  IO.puts("  #{area_id} (#{area_name}): #{count} mentions")
+end)
+
+# Most common features
+feature_counts =
+  successful_feedback
+  |> Enum.flat_map(& &1.extracted_features)
+  |> Enum.frequencies()
+  |> Enum.sort_by(fn {_feature, count} -> count end, :desc)
+  |> Enum.take(10)
+
+IO.puts("\n🔧 Top Features Mentioned:")
+
+feature_counts
+|> Enum.each(fn {feature_id, count} ->
+  feature = Enum.find(features, fn f -> f.id == feature_id end)
+  feature_name = if feature, do: feature.name, else: "Unknown"
+  IO.puts("  #{feature_id} (#{feature_name}): #{count} mentions")
+end)
+```
+
+---
+
+## Next Steps
+
+🎉 **Congratulations!** You now have a working POC that:
+
+* ✅ Loads product context (areas & features)
+* ✅ Loads all 5 VOC feedback sources (480+ items)
+* ✅ Uses Claude Sonnet 4.5 via AWS Bedrock with structured output (generate_object)
+* ✅ Agent 1: Extracts product areas, features, themes, sentiment, and urgency
+* ✅ Agent 2: Clusters similar feedback into thematic groups
+* ✅ Agent 3: Generates actionable insights with priority, confidence, and recommendations
+* ✅ Maintains full traceability (CSV → feedback → clusters → insights)
+* ✅ Export capabilities (JSON reports with metadata)
+
+### What's Next:
+
+1. **Visualizations** - VegaLite charts showing:
+   * Sentiment/urgency distributions across clusters
+   * Source diversity heat map
+2. **Advanced features**:
+   * Track insights over time (detect trending issues)
+   * Connect insights to OKRs and strategy
+   * Generate PRDs from insights
+   * Interactive dashboard for insights exploration
+
+---

@@ -1,0 +1,15 @@
+Feature ID,Feature Name,Product Area ID,Description
+F001,Setup Wizard,PA001,Guided step-by-step onboarding for new merchants
+F002,Payment Gateway Connector,PA001,Connect store with major payment providers
+F003,AI Product Description Generator,PA002,Automatically generates creative product descriptions
+F004,AI Tone Trainer,PA002,Allows user to personalize AI-generated content tone
+F005,Order Management Dashboard,PA003,"View, track, and manage orders efficiently"
+F006,Subscription Manager,PA004,"Handle plan upgrades, billing, and invoices"
+F007,Invoice Generator,PA004,Automatically generates invoices for customers
+F008,API Key Manager,PA005,Manage and secure developer API credentials
+F009,Support Chat,PA006,Live customer support chat system
+F010,Help Center Articles,PA006,Knowledge base with searchable help content
+F011,Arabic RTL Theme,PA007,Storefront layout optimized for right-to-left languages
+F012,Language Switcher,PA007,Allows users to toggle between Arabic and English views
+F013,Performance Analytics,PA008,Displays traffic and performance metrics
+F014,Feedback Dashboard,PA008,Aggregates and visualizes customer feedback trends

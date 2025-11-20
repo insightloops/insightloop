@@ -1,0 +1,101 @@
+Customer ID,Plan Type,Duration Before Churn (months),Primary Reason,Open Feedback,Suggested Improvement
+CH001,Starter,5,Poor support,I switched to Shopify because it offers more integrations.,Offer better integrations.
+CH002,Business,12,Switched to competitor,Support was friendly but slow to respond.,Enhance uptime.
+CH003,Pro,12,Poor support,واجهت صعوبة في الربط مع بوابة الدفع.,Offer better integrations.
+CH004,Pro,8,Setup was hard,Didn’t get any sales after the trial. Not worth paying monthly.,Faster support response.
+CH005,Business,12,Technical issues,واجهت مشاكل في السرعة وقت العروض.,Add a cheaper plan.
+CH006,Business,1,Poor support,"The setup was confusing, especially the payment gateway connection.",Localized help articles.
+CH007,Starter,4,Poor support,"The setup was confusing, especially the payment gateway connection.",Localized help articles.
+CH008,Pro,6,Switched to competitor,واجهت مشاكل في السرعة وقت العروض.,Improve onboarding steps.
+CH009,Business,1,Switched to competitor,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Offer better integrations.
+CH010,Starter,3,Poor support,"The setup was confusing, especially the payment gateway connection.",Faster support response.
+CH011,Starter,10,Technical issues,واجهت مشاكل في السرعة وقت العروض.,Improve onboarding steps.
+CH012,Business,3,Seasonal business,واجهت مشاكل في السرعة وقت العروض.,Faster support response.
+CH013,Business,1,Technical issues,واجهت مشاكل في السرعة وقت العروض.,Add a cheaper plan.
+CH014,Pro,11,Technical issues,Didn’t get any sales after the trial. Not worth paying monthly.,Offer better integrations.
+CH015,Starter,6,Switched to competitor,واجهت مشاكل في السرعة وقت العروض.,Improve onboarding steps.
+CH016,Pro,4,Technical issues,Support was friendly but slow to respond.,Improve onboarding steps.
+CH017,Business,5,Technical issues,"I liked the platform, but I only needed it occasionally.",Faster support response.
+CH018,Starter,10,Switched to competitor,"The setup was confusing, especially the payment gateway connection.",Enhance uptime.
+CH019,Pro,5,Setup was hard,Support was friendly but slow to respond.,Add a cheaper plan.
+CH020,Pro,12,Seasonal business,"Good tool, but not suitable for small stores.",Add a cheaper plan.
+CH021,Pro,11,Too expensive,واجهت صعوبة في الربط مع بوابة الدفع.,Faster support response.
+CH022,Starter,10,Setup was hard,واجهت صعوبة في الربط مع بوابة الدفع.,Localized help articles.
+CH023,Business,10,Too expensive,واجهت صعوبة في الربط مع بوابة الدفع.,Offer better integrations.
+CH024,Starter,12,Seasonal business,الأسعار مرتفعة شوي بالنسبة لمتجر صغير.,Add a cheaper plan.
+CH025,Starter,2,Seasonal business,واجهت مشاكل في السرعة وقت العروض.,Enhance uptime.
+CH026,Starter,12,Seasonal business,"I liked the platform, but I only needed it occasionally.",Improve onboarding steps.
+CH027,Business,7,Technical issues,واجهت صعوبة في الربط مع بوابة الدفع.,Add a cheaper plan.
+CH028,Business,4,Too expensive,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Improve onboarding steps.
+CH029,Business,3,Didn’t see value,"Good tool, but not suitable for small stores.",Offer better integrations.
+CH030,Pro,2,Switched to competitor,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Faster support response.
+CH031,Pro,8,Switched to competitor,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Offer better integrations.
+CH032,Starter,8,Seasonal business,"Good tool, but not suitable for small stores.",Enhance uptime.
+CH033,Starter,5,Too expensive,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Add a cheaper plan.
+CH034,Business,12,Too expensive,"The setup was confusing, especially the payment gateway connection.",Add a cheaper plan.
+CH035,Business,3,Seasonal business,واجهت صعوبة في الربط مع بوابة الدفع.,Localized help articles.
+CH036,Pro,8,Technical issues,واجهت صعوبة في الربط مع بوابة الدفع.,Faster support response.
+CH037,Starter,12,Too expensive,Support was friendly but slow to respond.,Offer better integrations.
+CH038,Business,9,Poor support,"Good tool, but not suitable for small stores.",Add a cheaper plan.
+CH039,Business,2,Didn’t see value,واجهت مشاكل في السرعة وقت العروض.,Add a cheaper plan.
+CH040,Starter,2,Too expensive,Didn’t get any sales after the trial. Not worth paying monthly.,Faster support response.
+CH041,Starter,5,Too expensive,Support was friendly but slow to respond.,Add a cheaper plan.
+CH042,Pro,2,Too expensive,"The setup was confusing, especially the payment gateway connection.",Localized help articles.
+CH043,Starter,6,Technical issues,Support was friendly but slow to respond.,Offer better integrations.
+CH044,Starter,9,Didn’t see value,I switched to Shopify because it offers more integrations.,Add a cheaper plan.
+CH045,Starter,11,Too expensive,"I liked the platform, but I only needed it occasionally.",Improve onboarding steps.
+CH046,Business,4,Didn’t see value,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Add a cheaper plan.
+CH047,Starter,6,Poor support,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Offer better integrations.
+CH048,Business,6,Setup was hard,الأسعار مرتفعة شوي بالنسبة لمتجر صغير.,Faster support response.
+CH049,Pro,3,Poor support,"Good tool, but not suitable for small stores.",Enhance uptime.
+CH050,Pro,6,Too expensive,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Improve onboarding steps.
+CH051,Starter,7,Seasonal business,الأسعار مرتفعة شوي بالنسبة لمتجر صغير.,Add a cheaper plan.
+CH052,Pro,3,Too expensive,"The setup was confusing, especially the payment gateway connection.",Localized help articles.
+CH053,Pro,8,Poor support,Support was friendly but slow to respond.,Faster support response.
+CH054,Starter,3,Switched to competitor,Support was friendly but slow to respond.,Enhance uptime.
+CH055,Pro,5,Setup was hard,I switched to Shopify because it offers more integrations.,Improve onboarding steps.
+CH056,Business,4,Setup was hard,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Localized help articles.
+CH057,Pro,9,Seasonal business,"I liked the platform, but I only needed it occasionally.",Faster support response.
+CH058,Pro,8,Seasonal business,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Localized help articles.
+CH059,Pro,2,Didn’t see value,I switched to Shopify because it offers more integrations.,Localized help articles.
+CH060,Business,5,Setup was hard,"I liked the platform, but I only needed it occasionally.",Localized help articles.
+CH061,Pro,2,Poor support,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Add a cheaper plan.
+CH062,Pro,8,Too expensive,Support was friendly but slow to respond.,Offer better integrations.
+CH063,Business,1,Poor support,"Good tool, but not suitable for small stores.",Offer better integrations.
+CH064,Starter,3,Setup was hard,"I liked the platform, but I only needed it occasionally.",Enhance uptime.
+CH065,Starter,3,Technical issues,I switched to Shopify because it offers more integrations.,Improve onboarding steps.
+CH066,Pro,9,Poor support,"Good tool, but not suitable for small stores.",Offer better integrations.
+CH067,Starter,9,Poor support,واجهت صعوبة في الربط مع بوابة الدفع.,Offer better integrations.
+CH068,Pro,8,Didn’t see value,واجهت صعوبة في الربط مع بوابة الدفع.,Add a cheaper plan.
+CH069,Starter,4,Technical issues,"Good tool, but not suitable for small stores.",Offer better integrations.
+CH070,Pro,12,Technical issues,Didn’t get any sales after the trial. Not worth paying monthly.,Add a cheaper plan.
+CH071,Business,3,Setup was hard,"I liked the platform, but I only needed it occasionally.",Localized help articles.
+CH072,Business,6,Technical issues,Didn’t get any sales after the trial. Not worth paying monthly.,Enhance uptime.
+CH073,Starter,12,Didn’t see value,"Good tool, but not suitable for small stores.",Add a cheaper plan.
+CH074,Starter,7,Poor support,Support was friendly but slow to respond.,Faster support response.
+CH075,Business,11,Too expensive,واجهت صعوبة في الربط مع بوابة الدفع.,Improve onboarding steps.
+CH076,Business,12,Switched to competitor,Didn’t get any sales after the trial. Not worth paying monthly.,Add a cheaper plan.
+CH077,Business,3,Too expensive,واجهت صعوبة في الربط مع بوابة الدفع.,Localized help articles.
+CH078,Business,11,Technical issues,"The setup was confusing, especially the payment gateway connection.",Improve onboarding steps.
+CH079,Business,5,Poor support,"The setup was confusing, especially the payment gateway connection.",Localized help articles.
+CH080,Pro,3,Technical issues,Support was friendly but slow to respond.,Localized help articles.
+CH081,Starter,2,Setup was hard,واجهت صعوبة في الربط مع بوابة الدفع.,Faster support response.
+CH082,Pro,4,Didn’t see value,Didn’t get any sales after the trial. Not worth paying monthly.,Add a cheaper plan.
+CH083,Business,11,Too expensive,I switched to Shopify because it offers more integrations.,Faster support response.
+CH084,Starter,1,Setup was hard,واجهت صعوبة في الربط مع بوابة الدفع.,Improve onboarding steps.
+CH085,Pro,2,Technical issues,"I liked the platform, but I only needed it occasionally.",Add a cheaper plan.
+CH086,Business,9,Too expensive,"The setup was confusing, especially the payment gateway connection.",Localized help articles.
+CH087,Pro,10,Switched to competitor,"Good tool, but not suitable for small stores.",Add a cheaper plan.
+CH088,Starter,1,Setup was hard,"Good tool, but not suitable for small stores.",Faster support response.
+CH089,Business,11,Technical issues,الأسعار مرتفعة شوي بالنسبة لمتجر صغير.,Localized help articles.
+CH090,Starter,7,Technical issues,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Faster support response.
+CH091,Starter,7,Technical issues,Support was friendly but slow to respond.,Improve onboarding steps.
+CH092,Starter,5,Switched to competitor,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Improve onboarding steps.
+CH093,Starter,10,Poor support,"The setup was confusing, especially the payment gateway connection.",Enhance uptime.
+CH094,Pro,2,Setup was hard,Didn’t get any sales after the trial. Not worth paying monthly.,Localized help articles.
+CH095,Starter,1,Didn’t see value,واجهت مشاكل في السرعة وقت العروض.,Enhance uptime.
+CH096,Starter,5,Too expensive,I switched to Shopify because it offers more integrations.,Improve onboarding steps.
+CH097,Pro,8,Switched to competitor,الأسعار مرتفعة شوي بالنسبة لمتجر صغير.,Add a cheaper plan.
+CH098,Pro,4,Switched to competitor,المنصة ممتازة لكن الدعم الفني يتأخر بالرد.,Enhance uptime.
+CH099,Pro,10,Technical issues,"The setup was confusing, especially the payment gateway connection.",Localized help articles.
+CH100,Pro,10,Switched to competitor,الأسعار مرتفعة شوي بالنسبة لمتجر صغير.,Enhance uptime.

@@ -1,0 +1,9 @@
+Product Area ID,Product Area Name,Description,Example Feedback Themes
+PA001,Store Setup & Onboarding,Experience from signup to first product launch,"Setup confusing, payment gateway issues, onboarding friction"
+PA002,AI Tools,AI-powered features for automation and content generation,"AI tone, Arabic support, irrelevant results"
+PA003,Store Management,"Managing orders, products, and analytics","Crashes during sales, dashboard clarity, performance"
+PA004,Pricing & Plans,"Subscription, billing, and plan tiers","Too expensive, plan confusion, upgrade issues"
+PA005,Integrations & APIs,"Connections to shipping, payments, CRM, and third-party apps","Missing integration, API errors, sync delay"
+PA006,Customer Support,"Help center, chat, and ticket resolution","Slow response, great support, missing help content"
+PA007,Localization,"Arabic UX, translation, and RTL support","Arabic translation, layout issues, tone mismatch"
+PA008,Reporting & Insights,Analytics and feedback visualization,"Need better insights, dashboard, and tracking"

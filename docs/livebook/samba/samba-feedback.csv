@@ -1,0 +1,16 @@
+customer_name,customer_email,rating,comment,category,product_feature
+Maria Santos,maria@email.com,5,"Love the new playlist discovery feature! It really understands my music taste.",Feature,Playlist Discovery
+Carlos Rodriguez,carlos@email.com,4,"Audio quality is excellent, but sometimes the app crashes on my phone.",Product,Mobile App
+Ana Silva,ana@email.com,5,"The social sharing features are amazing! Love sharing my favorite tracks.",Feature,Social Features
+Pedro Lima,pedro@email.com,3,"Good music selection but the search function could be more accurate.",Feature,Search
+Isabella Costa,isabella@email.com,5,"Customer support was super helpful when I had billing questions.",Service,Customer Support
+Rafael Oliveira,rafael@email.com,4,"Love the offline download feature for commuting!",Feature,Offline Mode
+Lucia Fernandez,lucia@email.com,2,"App is too slow to load especially during peak hours.",Product,Performance
+Diego Martinez,diego@email.com,5,"The curated playlists for different moods are perfect!",Feature,Mood Playlists
+Carmen Lopez,carmen@email.com,4,"Great variety of international music but need more local artists.",Content,Music Library
+Miguel Torres,miguel@email.com,3,"Subscription price is reasonable but ads on free tier are too frequent.",Service,Pricing
+Valentina Gutierrez,valentina@email.com,5,"The new dark mode is exactly what I was looking for!",Feature,UI Theme
+Santiago Morales,santiago@email.com,2,"Keeps asking me to rate songs I've never heard before.",Product,Recommendation Engine
+Camila Herrera,camila@email.com,4,"Love that I can create collaborative playlists with friends.",Feature,Collaboration
+Gabriel Vargas,gabriel@email.com,3,"Good app overall but battery drain is quite high.",Product,Performance
+Alejandra Castro,alejandra@email.com,5,"The lyrics feature is amazing for karaoke nights!",Feature,Lyrics Display
