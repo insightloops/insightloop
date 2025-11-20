@@ -36,22 +36,30 @@ export interface PipelineOutput {
 /**
  * Orchestrates the complete feedback processing pipeline
  */
+interface APIKeys {
+  openai?: string
+  anthropic?: string
+}
+
 export class FeedbackPipelineOrchestrator {
   private feedbackRepository: FeedbackRepository
   private productAreaRepository: ProductAreaRepository
   private eventEmitter: PipelineEventEmitter
   private pipelineId: string
+  private apiKeys: APIKeys
 
   constructor(
     feedbackRepository: FeedbackRepository,
     productAreaRepository: ProductAreaRepository,
     eventEmitter: PipelineEventEmitter,
-    pipelineId: string
+    pipelineId: string,
+    apiKeys?: APIKeys
   ) {
     this.feedbackRepository = feedbackRepository
     this.productAreaRepository = productAreaRepository
     this.eventEmitter = eventEmitter
     this.pipelineId = pipelineId
+    this.apiKeys = apiKeys || {}
   }
 
   /**
@@ -152,7 +160,8 @@ export class FeedbackPipelineOrchestrator {
       this.productAreaRepository,
       this.eventEmitter,
       productId,
-      this.pipelineId
+      this.pipelineId,
+      this.apiKeys
     )
 
     // Run enrichment
@@ -175,7 +184,8 @@ export class FeedbackPipelineOrchestrator {
         similarityThreshold: 0.6,
         useEnrichmentData: true,
         qualityThreshold: 0.5
-      }
+      },
+      this.apiKeys
     )
 
     // Run clustering
@@ -191,7 +201,9 @@ export class FeedbackPipelineOrchestrator {
     // Initialize insight generation service with event emitter
     const insightGenerationService = new InsightGenerationService(
       this.eventEmitter,
-      this.pipelineId
+      this.pipelineId,
+      undefined, // Use default config
+      this.apiKeys
     )
 
     // Run insight generation

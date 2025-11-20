@@ -1,7 +1,7 @@
 /**
  * Enhanced Pipeline Executor Component
  * 
- * A comprehensive UI component that uses the usePipelineExecution hook to:
+ * A comprehensive UInt that uses the usePipelineExecution hook to:
  * - Upload feedback files and execute the pipeline
  * - Display real-time progress with enriched feedback, clusters, and insights
  * - Provide interactive drill-down capabilities for detailed analysis
@@ -13,7 +13,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { 
@@ -36,12 +35,12 @@ import {
   MessageSquare,
   Star,
   Layers,
-  PieChart,
   Activity
 } from 'lucide-react'
 import { usePipelineExecution } from '@/hooks/usePipelineExecution'
+import { useAPIKeys } from '@/contexts/APIKeyContext'
 import { EnrichedFeedbackDialog, ClusterDialog, InsightDialog } from '@/components/dialogs'
-import { PipelineInProgressView } from '@/components/PipelineInProgressView'
+import { UpdatedPipelineView } from '@/components/UpdatedPipelineView'
 import { PipelineCompletedView } from '@/components/PipelineCompletedView'
 
 interface EnhancedPipelineExecutorProps {
@@ -65,6 +64,18 @@ export function EnhancedPipelineExecutor({
   productId, 
   onComplete 
 }: EnhancedPipelineExecutorProps) {
+  // API Keys from context
+  const { apiKeys } = useAPIKeys()
+  
+  // Debug API keys in component
+  useEffect(() => {
+    console.log('EnhancedPipelineExecutor - API keys:', { 
+      hasOpenAI: !!apiKeys.openai, 
+      hasAnthropic: !!apiKeys.anthropic,
+      openaiLength: apiKeys.openai?.length 
+    })
+  }, [apiKeys])
+  
   // File upload state
   const [dragActive, setDragActive] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -461,10 +472,23 @@ export function EnhancedPipelineExecutor({
               </div>
             </div>
 
+            {/* API Key Warning */}
+            {!apiKeys.openai && (
+              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-center gap-2 text-amber-800">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="text-sm font-medium">OpenAI API Key Required</span>
+                </div>
+                <p className="text-sm text-amber-700 mt-1">
+                  Please configure your OpenAI API key in settings to run the pipeline.
+                </p>
+              </div>
+            )}
+
             {/* Upload Button */}
             <Button 
               onClick={startPipeline}
-              disabled={!selectedFile}
+              disabled={!selectedFile || !apiKeys.openai}
               className="w-full"
               size="lg"
             >
@@ -532,15 +556,15 @@ export function EnhancedPipelineExecutor({
               
               {(expandedSections.has('pipeline-progress') || isExecuting) && (
                 <CardContent className="animate-in fade-in-0 duration-300">
-                  <PipelineInProgressView
+                  <UpdatedPipelineView
                     stages={stages}
                     enrichedFeedback={enrichedFeedback}
                     enrichedClusters={enrichedClusters}
                     events={events}
                     expandedSections={expandedSections}
                     onToggleSection={toggleSection}
-                    onViewFeedback={(feedback) => setSelectedModal({ type: 'enriched-feedback', data: feedback })}
-                    onViewCluster={(cluster) => setSelectedModal({ type: 'cluster', data: cluster })}
+                    onViewFeedback={(feedback: any) => setSelectedModal({ type: 'enriched-feedback', data: feedback })}
+                    onViewCluster={(cluster: any) => setSelectedModal({ type: 'cluster', data: cluster })}
                     getSentimentColor={getSentimentColor}
                     stageProgress={stageProgress}
                     progressStats={progressStats}

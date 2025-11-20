@@ -110,19 +110,27 @@ export interface InsightGenerationConfig {
 /**
  * Primary service for generating AI-driven insights from semantic clusters
  */
+interface APIKeys {
+  openai?: string
+  anthropic?: string
+}
+
 export class InsightGenerationService {
   private insightAgent!: ChatWrapper
   private config: InsightGenerationConfig
   private eventEmitter: PipelineEventEmitter
   private pipelineId: string
+  private apiKeys: APIKeys
 
   constructor(
     eventEmitter: PipelineEventEmitter,
     pipelineId: string,
-    config?: Partial<InsightGenerationConfig>
+    config?: Partial<InsightGenerationConfig>,
+    apiKeys?: APIKeys
   ) {
     this.eventEmitter = eventEmitter
     this.pipelineId = pipelineId
+    this.apiKeys = apiKeys || {}
     this.config = {
       analysisDepth: 'comprehensive',
       stakeholderFocus: 'product',
@@ -139,6 +147,7 @@ export class InsightGenerationService {
       {
         provider: 'openai',
         model: 'gpt-4-turbo-preview',
+        apiKey: this.apiKeys.openai, // Use user's API key if provided
         temperature: 0.2  // Balanced creativity and consistency
       },
       {

@@ -50,6 +50,11 @@ export interface EnrichedFeedbackEntry extends FeedbackEntry {
  * - Urgency assessment
  * - Category tagging
  */
+interface APIKeys {
+  openai?: string
+  anthropic?: string
+}
+
 export class FeedbackEnrichmentService {
   private enrichmentAgent!: ChatWrapper
   private feedbackRepository: FeedbackRepository
@@ -57,6 +62,7 @@ export class FeedbackEnrichmentService {
   private eventEmitter: PipelineEventEmitter
   private productId: string
   private pipelineId?: string
+  private apiKeys: APIKeys
 
   constructor(
     feedbackRepository: FeedbackRepository, 
@@ -64,12 +70,14 @@ export class FeedbackEnrichmentService {
     eventEmitter: PipelineEventEmitter,
     productId: string,
     pipelineId?: string,
+    apiKeys?: APIKeys
   ) {
     this.feedbackRepository = feedbackRepository
     this.productAreaRepository = productAreaRepository
     this.eventEmitter = eventEmitter
     this.productId = productId
     this.pipelineId = pipelineId
+    this.apiKeys = apiKeys || {}
     this.initializeEnrichmentAgent()
   }
 
@@ -78,6 +86,7 @@ export class FeedbackEnrichmentService {
       {
         provider: 'openai',
         model: 'gpt-4-turbo-preview',
+        apiKey: this.apiKeys.openai, // Use user's API key if provided
         temperature: 0  // Low temperature for faster, more deterministic responses
       },
       {

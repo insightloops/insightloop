@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 import { FeedbackPipelineOrchestrator } from '@/lib/services/FeedbackPipelineOrchestrator'
 import { FeedbackRepository } from '@/lib/repositories/FeedbackRepository'
@@ -28,10 +25,27 @@ export async function POST(request: NextRequest) {
     const companyId = formData.get('companyId') as string
     const productId = formData.get('productId') as string
     const source = formData.get('source') as string
+    
+    // Extract API keys from form data if provided
+    const openaiApiKey = formData.get('openaiApiKey') as string
+    const anthropicApiKey = formData.get('anthropicApiKey') as string
+    
+    const apiKeys = {
+      openai: openaiApiKey || undefined,
+      anthropic: anthropicApiKey || undefined
+    }
 
     if (!file || !companyId || !productId) {
       return NextResponse.json(
         { error: 'Missing required fields: file, companyId, productId' },
+        { status: 400 }
+      )
+    }
+
+    // Require OpenAI API key for pipeline execution
+    if (!openaiApiKey) {
+      return NextResponse.json(
+        { error: 'OpenAI API key is required for pipeline execution. Please configure your API key in settings.' },
         { status: 400 }
       )
     }
@@ -43,18 +57,9 @@ export async function POST(request: NextRequest) {
     const feedbackRepository = new FeedbackRepository(supabase)
     const productAreaRepository = new ProductAreaRepository(supabase)
 
-    // Save uploaded file
+    // Process uploaded file directly in memory
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'uploads')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
-    
-    const filePath = join(uploadsDir, `${pipelineId}_${file.name}`)
-    await writeFile(filePath, buffer)
 
     // Parse feedback data from file
     const feedbackData = await parseFeedbackFile(buffer, file.name, {
@@ -86,7 +91,8 @@ export async function POST(request: NextRequest) {
           feedbackRepository,
           productAreaRepository,
           eventEmitter,
-          pipelineId
+          pipelineId,
+          apiKeys
         )
         
         try {

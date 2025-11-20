@@ -52,19 +52,27 @@ export interface ClusteringConfig {
  * Advanced semantic clustering service that uses multiple approaches
  * to group feedback entries into meaningful, actionable clusters
  */
+interface APIKeys {
+  openai?: string
+  anthropic?: string
+}
+
 export class SemanticClusteringService {
   private clusteringAgent!: ChatWrapper
   private config: ClusteringConfig
   private eventEmitter: PipelineEventEmitter
   private pipelineId: string
+  private apiKeys: APIKeys
 
   constructor(
     eventEmitter: PipelineEventEmitter,
     pipelineId: string,
-    config?: Partial<ClusteringConfig>
+    config?: Partial<ClusteringConfig>,
+    apiKeys?: APIKeys
   ) {
     this.eventEmitter = eventEmitter
     this.pipelineId = pipelineId
+    this.apiKeys = apiKeys || {}
     this.config = {
       maxClusters: 8,
       minClusterSize: 2,
@@ -81,6 +89,7 @@ export class SemanticClusteringService {
       {
         provider: 'openai',
         model: 'gpt-4-turbo-preview',
+        apiKey: this.apiKeys.openai, // Use user's API key if provided
         temperature: 0.1  // Low temperature for consistent clustering
       },
       {

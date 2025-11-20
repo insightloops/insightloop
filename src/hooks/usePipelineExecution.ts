@@ -9,6 +9,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { useAPIKeys } from '@/contexts/APIKeyContext'
 
 interface PipelineEvent {
   type: string
@@ -117,6 +118,28 @@ interface ExecutePipelineParams {
 }
 
 export function usePipelineExecution() {
+  const { apiKeys } = useAPIKeys()
+  
+  // Fallback: Read API keys directly from localStorage if context is empty
+  const getAPIKeys = () => {
+    if (apiKeys.openai || apiKeys.anthropic) {
+      return apiKeys
+    }
+    
+    // Context might not be loaded yet, read directly from localStorage
+    try {
+      const stored = localStorage.getItem('insightloop_api_keys')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        return parsed
+      }
+    } catch (error) {
+      console.warn('Failed to read API keys from localStorage:', error)
+    }
+    
+    return apiKeys
+  }
+  
   const [state, setState] = useState<PipelineExecutionState>({
     isExecuting: false,
     events: [],
@@ -412,6 +435,17 @@ export function usePipelineExecution() {
       formData.append('companyId', companyId)
       formData.append('productId', productId)
       formData.append('source', source)
+      
+      // Get API keys (with localStorage fallback)
+      const currentApiKeys = getAPIKeys()
+      
+      if (currentApiKeys.openai) {
+        formData.append('openaiApiKey', currentApiKeys.openai)
+      }
+      
+      if (currentApiKeys.anthropic) {
+        formData.append('anthropicApiKey', currentApiKeys.anthropic)
+      }
 
       const response = await fetch('/api/pipeline/execute', {
         method: 'POST',
