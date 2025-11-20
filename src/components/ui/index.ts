@@ -1,4 +1,5 @@
 export { Button, buttonVariants } from './button'
+export { InsightLoopButton } from './insightloop-button'
 export { Input } from './input'
 export { Label } from './label'
 export { Textarea } from './textarea'

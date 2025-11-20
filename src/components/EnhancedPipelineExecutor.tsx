@@ -13,6 +13,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { InsightLoopButton } from '@/components/ui/insightloop-button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { 
@@ -486,15 +487,16 @@ export function EnhancedPipelineExecutor({
             )}
 
             {/* Upload Button */}
-            <Button 
+            <InsightLoopButton 
+              insightVariant="ai"
+              withIcon
               onClick={startPipeline}
               disabled={!selectedFile || !apiKeys.openai}
               className="w-full"
               size="lg"
             >
-              <Zap className="w-4 h-4 mr-2" />
               Start Enhanced AI Pipeline
-            </Button>
+            </InsightLoopButton>
           </CardContent>
         </Card>
       )}

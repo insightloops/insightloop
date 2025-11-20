@@ -1,72 +1,121 @@
 @import "tailwindcss";
 
 :root {
-  /* Enterprise AI Insights Light Theme */
-  --background: 240 8% 97%;
-  --foreground: 240 25% 8%;
+  /* InsightLoop AI Analytics Light Theme */
+  --background: 220 20% 98%;
+  --foreground: 220 25% 8%;
   --card: 0 0% 100%;
-  --card-foreground: 240 25% 8%;
+  --card-foreground: 220 25% 8%;
   --popover: 0 0% 100%;
-  --popover-foreground: 240 25% 8%;
-  --primary: 262 90% 58%;
+  --popover-foreground: 220 25% 8%;
+  
+  /* Primary: Deep AI Blue with Purple undertones */
+  --primary: 225 73% 57%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 240 5% 92%;
-  --secondary-foreground: 240 25% 8%;
-  --muted: 240 5% 94%;
-  --muted-foreground: 240 8% 48%;
-  --accent: 195 85% 92%;
-  --accent-foreground: 195 100% 28%;
-  --destructive: 0 84% 58%;
+  --primary-hover: 225 73% 52%;
+  
+  /* Secondary: Sophisticated Gray-Blue */
+  --secondary: 220 14% 91%;
+  --secondary-foreground: 220 25% 8%;
+  --secondary-hover: 220 14% 86%;
+  
+  /* Muted: Soft Background Tones */
+  --muted: 220 13% 95%;
+  --muted-foreground: 220 8% 46%;
+  
+  /* Accent: Teal for Highlights */
+  --accent: 178 60% 48%;
+  --accent-foreground: 0 0% 100%;
+  --accent-hover: 178 60% 43%;
+  
+  /* Status Colors */
+  --destructive: 0 75% 60%;
   --destructive-foreground: 0 0% 98%;
-  --warning: 38 92% 50%;
-  --warning-foreground: 0 0% 98%;
-  --success: 142 71% 45%;
+  --warning: 35 91% 62%;
+  --warning-foreground: 35 15% 8%;
+  --success: 140 69% 49%;
   --success-foreground: 0 0% 98%;
-  --info: 210 100% 56%;
+  --info: 210 98% 63%;
   --info-foreground: 0 0% 98%;
-  --border: 240 8% 86%;
-  --input: 240 5% 92%;
-  --ring: 262 90% 58%;
-  --chart-1: 262 90% 58%;
-  --chart-2: 195 100% 45%;
-  --chart-3: 142 71% 45%;
-  --chart-4: 38 92% 50%;
-  --chart-5: 310 85% 60%;
+  
+  /* UI Elements */
+  --border: 220 13% 88%;
+  --input: 220 13% 93%;
+  --ring: 225 73% 57%;
+  
+  /* InsightLoop Branded Colors */
+  --insight-primary: 225 73% 57%;
+  --insight-secondary: 178 60% 48%;
+  --insight-tertiary: 267 84% 65%;
+  --insight-quaternary: 32 98% 67%;
+  
+  /* Chart Colors - Optimized for Data Visualization */
+  --chart-1: 225 73% 57%;    /* Primary Blue */
+  --chart-2: 178 60% 48%;    /* Teal */
+  --chart-3: 267 84% 65%;    /* Purple */
+  --chart-4: 32 98% 67%;     /* Orange */
+  --chart-5: 140 69% 49%;    /* Green */
+  --chart-6: 340 85% 67%;    /* Pink */
+  
   --radius: 0.75rem;
 }
 
 .dark {
-  /* Enterprise AI Insights Dark Theme */
-  --background: 240 18% 4%;
-  --foreground: 240 8% 95%;
-  --card: 240 15% 7%;
-  --card-foreground: 240 8% 95%;
-  --popover: 240 15% 7%;
-  --popover-foreground: 240 8% 95%;
-  --primary: 262 95% 70%;
-  --primary-foreground: 240 18% 4%;
-  --secondary: 240 8% 12%;
-  --secondary-foreground: 240 8% 85%;
-  --muted: 240 8% 12%;
-  --muted-foreground: 240 5% 58%;
-  --accent: 195 80% 8%;
-  --accent-foreground: 195 100% 75%;
-  --destructive: 0 75% 55%;
+  /* InsightLoop AI Analytics Dark Theme */
+  --background: 220 27% 3%;
+  --foreground: 220 8% 95%;
+  --card: 220 25% 5%;
+  --card-foreground: 220 8% 95%;
+  --popover: 220 25% 5%;
+  --popover-foreground: 220 8% 95%;
+  
+  /* Primary: Bright AI Blue */
+  --primary: 225 84% 67%;
+  --primary-foreground: 220 27% 3%;
+  --primary-hover: 225 84% 72%;
+  
+  /* Secondary: Dark Sophisticated Tone */
+  --secondary: 220 15% 11%;
+  --secondary-foreground: 220 8% 85%;
+  --secondary-hover: 220 15% 16%;
+  
+  /* Muted: Dark Background Variations */
+  --muted: 220 15% 8%;
+  --muted-foreground: 220 5% 65%;
+  
+  /* Accent: Bright Teal */
+  --accent: 178 70% 58%;
+  --accent-foreground: 220 27% 3%;
+  --accent-hover: 178 70% 63%;
+  
+  /* Status Colors - Dark Mode Optimized */
+  --destructive: 0 85% 65%;
   --destructive-foreground: 0 0% 98%;
-  --warning: 38 95% 55%;
-  --warning-foreground: 38 10% 10%;
-  --success: 142 71% 50%;
-  --success-foreground: 142 10% 10%;
-  --info: 210 100% 60%;
-  --info-foreground: 210 10% 10%;
-  --border: 240 8% 16%;
-  --input: 240 8% 12%;
-  --ring: 262 95% 70%;
-  --chart-1: 262 95% 70%;
-  --chart-2: 195 100% 55%;
-  --chart-3: 142 71% 50%;
-  --chart-4: 38 95% 55%;
-  --chart-5: 310 90% 65%;
+  --warning: 35 100% 72%;
+  --warning-foreground: 35 25% 8%;
+  --success: 140 79% 59%;
+  --success-foreground: 140 25% 8%;
+  --info: 210 98% 73%;
+  --info-foreground: 210 25% 8%;
+  
+  /* UI Elements */
+  --border: 220 15% 16%;
+  --input: 220 15% 8%;
+  --ring: 225 84% 67%;
+  
+  /* InsightLoop Branded Colors - Dark Mode */
+  --insight-primary: 225 84% 67%;
+  --insight-secondary: 178 70% 58%;
+  --insight-tertiary: 267 94% 75%;
+  --insight-quaternary: 32 100% 77%;
+  
+  /* Chart Colors - Dark Mode Optimized */
+  --chart-1: 225 84% 67%;    /* Bright Blue */
+  --chart-2: 178 70% 58%;    /* Bright Teal */
+  --chart-3: 267 94% 75%;    /* Bright Purple */
+  --chart-4: 32 100% 77%;    /* Bright Orange */
+  --chart-5: 140 79% 59%;    /* Bright Green */
+  --chart-6: 340 95% 77%;    /* Bright Pink */
 }
 
 * {
@@ -80,22 +129,60 @@ body {
   font-feature-settings: 'cv01', 'cv02', 'cv03', 'cv04';
 }
 
-/* Enhanced enterprise visual effects */
+/* Enhanced InsightLoop visual effects */
 .card {
-  backdrop-filter: blur(8px);
-  border: 1px solid hsl(var(--border) / 0.5);
+  backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--border) / 0.6);
   box-shadow: 
-    0 1px 3px 0 hsl(var(--foreground) / 0.05),
-    0 4px 6px -4px hsl(var(--foreground) / 0.05);
+    0 2px 8px 0 hsl(var(--foreground) / 0.04),
+    0 6px 20px -6px hsl(var(--foreground) / 0.08);
+  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.98) 100%);
 }
 
 .dark .card {
   background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%);
   border: 1px solid hsl(var(--border) / 0.8);
   box-shadow: 
-    0 1px 3px 0 hsl(var(--primary) / 0.1),
-    0 4px 6px -4px hsl(var(--primary) / 0.1),
+    0 2px 8px 0 hsl(var(--primary) / 0.08),
+    0 6px 20px -6px hsl(var(--primary) / 0.12),
     inset 0 1px 0 0 hsl(var(--primary) / 0.1);
+}
+
+/* InsightLoop Button Animations */
+@keyframes insightloop-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes insightloop-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.insightloop-button-ai {
+  animation: insightloop-pulse 2s ease-in-out infinite;
+}
+
+.insightloop-button-ai:hover {
+  animation: none;
+}
+
+/* Glassmorphism enhancements */
+.glassmorphism {
+  backdrop-filter: blur(16px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glassmorphism {
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced focus states for accessibility */
+.insightloop-focus:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--primary)), 0 0 0 4px hsl(var(--background));
 }
 
 /* Insight score gradient indicators */
